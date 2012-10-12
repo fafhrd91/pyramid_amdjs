@@ -17,8 +17,9 @@ def includeme(cfg):
     settings['amd.nodejs'] = settings.get('amd.nodejs', '').strip()
 
     # request methods
-    cfg.add_request_method(amd.render_js_includes, 'include_amd_js')
-    cfg.add_request_method(amd.render_css_includes, 'include_amd_css')
+    cfg.add_request_method(amd.request_amd_init, 'init_amd')
+    cfg.add_request_method(amd.request_includes, 'include_js')
+    cfg.add_request_method(amd.request_css_includes, 'include_css')
 
     # config directives
     cfg.add_directive('add_amd_dir', amd.add_amd_dir)

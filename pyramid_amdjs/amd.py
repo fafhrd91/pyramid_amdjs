@@ -261,7 +261,7 @@ def amd_init(request):
     return response
 
 
-def render_js_includes(request, spec='', bundles=()):
+def request_amd_init(request, spec='', bundles=()):
     registry = request.registry
     cfg = request.registry.settings
 
@@ -292,7 +292,22 @@ def render_js_includes(request, spec='', bundles=()):
     return '\n'.join(c_tmpls)
 
 
-def render_css_includes(request, css=()):
+def request_includes(request, js=(), css=()):
+    if isinstance(js, basestring):
+        js = (js,)
+
+    mods = ["'%s'"%c for c in js]
+
+    if isinstance(css, basestring):
+        css = (css,)
+
+    mods.extend("'css!%s.css'"%c for c in css)
+
+    return ("<script>curl([%s],{paths:pyramid_amd_modules})</script>" %
+            ','.join(mods))
+
+
+def request_css_includes(request, css=()):
     if isinstance(css, basestring):
         css = (css,)
 

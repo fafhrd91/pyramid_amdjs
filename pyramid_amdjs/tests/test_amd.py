@@ -301,16 +301,25 @@ class TestRequestRenderers(BaseTestCase):
     def test_render_js_includes(self):
         self.cfg['amd.enabled'] = False
 
-        text = self.request.include_amd_js().strip()
+        text = self.request.init_amd().strip()
         self.assertEqual(
             text, '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script src="http://example.com/_amd__.js"> </script>')
 
-        text = self.request.include_amd_js('test-spec').strip()
+        text = self.request.init_amd('test-spec').strip()
         self.assertIn(
             '<script src="http://example.com/_amd__.js"> </script>', text)
 
-    def test_render_css_includes(self):
-        text = self.request.include_amd_css('test-css').strip()
+    def test_include_js(self):
+        text = self.request.include_js('test').strip()
+        self.assertIn(
+            "curl(['test'],{paths:pyramid_amd_modules})", text)
+
+        text = self.request.include_js('test', 'test-css').strip()
+        self.assertIn(
+            "curl(['test','css!test-css.css'],{paths:pyramid_amd_modules})", text)
+
+    def test_include_css(self):
+        text = self.request.include_css('test-css').strip()
         self.assertIn(
             "curl(['css!test-css.css'],{paths:pyramid_amd_modules})", text)
 
@@ -318,14 +327,14 @@ class TestRequestRenderers(BaseTestCase):
         self.cfg['amd.enabled'] = True
 
         self.assertRaises(
-            RuntimeError, self.request.include_amd_js, 'unknown')
+            RuntimeError, self.request.init_amd, 'unknown')
         self.assertRaises(
-            RuntimeError, self.request.include_amd_js, 'spec')
+            RuntimeError, self.request.init_amd, 'spec')
 
     def test_render_js_includes_default(self):
         self.cfg['amd.enabled'] = True
 
-        text = self.request.include_amd_js().strip()
+        text = self.request.init_amd().strip()
         self.assertEqual(
             text, '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script src="http://example.com/_amd__.js"> </script>')
 
@@ -337,10 +346,10 @@ class TestRequestRenderers(BaseTestCase):
         self.registry[ID_AMD_SPEC] = {'test':
                                       {'test.js': {'path':'/test/test.js'}}}
 
-        text = self.request.include_amd_js('test').strip()
+        text = self.request.init_amd('test').strip()
         self.assertIn(
             '<script src="http://example.com/_amd_test.js"> </script>', text)
 
-        text = self.request.include_amd_js('test', 'test').strip()
+        text = self.request.init_amd('test', 'test').strip()
         self.assertIn(
             '<script src="http://example.com/_amd_test.js"> </script>\n<script src="http://example.com/_amd_test/test.js"></script>', text)
