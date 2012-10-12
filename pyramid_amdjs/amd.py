@@ -1,7 +1,7 @@
 import os
 import logging
 from pyramid.path import AssetResolver
-from pyramid.compat import escape, configparser, text_type, text_
+from pyramid.compat import escape, configparser, text_type, string_types, text_
 from pyramid.view import view_config
 from pyramid.registry import Introspectable
 from pyramid.response import FileResponse
@@ -293,12 +293,12 @@ def request_amd_init(request, spec='', bundles=()):
 
 
 def request_includes(request, js=(), css=()):
-    if isinstance(js, basestring):
+    if isinstance(js, string_types):
         js = (js,)
 
     mods = ["'%s'"%c for c in js]
 
-    if isinstance(css, basestring):
+    if isinstance(css, string_types):
         css = (css,)
 
     mods.extend("'css!%s.css'"%c for c in css)
@@ -308,7 +308,7 @@ def request_includes(request, js=(), css=()):
 
 
 def request_css_includes(request, css=()):
-    if isinstance(css, basestring):
+    if isinstance(css, string_types):
         css = (css,)
 
     return ("<script>curl([%s],{paths:pyramid_amd_modules})</script>" %
