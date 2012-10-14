@@ -6,7 +6,7 @@ from pyramid.response import FileResponse
 from pyramid.exceptions import ConfigurationError, ConfigurationConflictError
 from pyramid.httpexceptions import HTTPNotFound
 
-from base import BaseTestCase
+from base import BaseTestCase, TestCase
 
 
 class TestAmdDirective(BaseTestCase):
@@ -353,3 +353,32 @@ class TestRequestRenderers(BaseTestCase):
         text = self.request.init_amd('test', 'test').strip()
         self.assertIn(
             '<script src="http://example.com/_amd_test.js"> </script>\n<script src="http://example.com/_amd_test/test.js"></script>', text)
+
+
+class TestExtractMod(TestCase):
+
+    def test_extract_mod(self):
+        from pyramid_amdjs.amd import extract_mod
+
+        res = extract_mod(
+            'test', "define('test2', ['test3', 'test4'], function(){})", None)
+        self.assertEqual(res, [('test2', ['test3', 'test4'])])
+
+    def test_extract_mod_empty_name(self):
+        from pyramid_amdjs.amd import extract_mod
+
+        class Log(object):
+            txt = None
+            def warning(self, txt):
+                self.txt = txt
+                
+        log = Log()
+        res = extract_mod(
+            'test', "define(['test3', 'test4'], function(){})", log)
+        self.assertEqual(log.txt, "Empty name is not supported, test.js")
+
+    def test_extract_mod_no_func(self):
+        from pyramid_amdjs.amd import extract_mod
+
+        res = extract_mod('test', "define('test', )", None)
+        self.assertEqual(res, [])

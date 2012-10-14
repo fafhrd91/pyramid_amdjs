@@ -515,12 +515,12 @@ define (
                     console.log("Can't find template:", name)
                     return ''
                 } else {
-                    //try {
+                    try {
                         return this.templates[name](
                             context, {partials: partials})
-                    //} catch(e) {
-                    //    console.log(e, name)
-                    //}
+                    } catch(e) {
+                        console.log(e, name)
+                    }
                 }
                 return ''
             }

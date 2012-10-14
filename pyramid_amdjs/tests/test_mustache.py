@@ -97,7 +97,7 @@ class TestBundleRoute(BaseTestCase):
 
         self.assertIn(
             ('test-bundle',
-             'http://example.com/_mustache/test-bundle.js'),
+             'http://example.com/_handlebars/test-bundle.js'),
             list_bundles(self.request))
 
     def test_list_bundles_unset(self):
@@ -119,8 +119,33 @@ class TestBundleRoute(BaseTestCase):
 
         res = amd_init(self.request)
         self.assertIn(
-            '"test-bundle":"http://example.com/_mustache/test-bundle.js"',
+            '"test-bundle":"http://example.com/_handlebars/test-bundle.js"',
             res.text)
+
+    def test_build_bundle(self):
+        from pyramid_amdjs.mustache import bundle_view
+
+        self.config.add_mustache_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle/')
+        self.request.matchdict['name'] = 'test-bundle'
+
+        res = bundle_view(self.request)
+        self.assertIn(
+            '"form-window":Handlebars.template(function', res.text)
+
+    @mock.patch('pyramid_amdjs.mustache.compat')
+    def test_build_bundle_no_node(self, m_comp):
+        from pyramid_amdjs.mustache import bundle_view
+
+        self.config.add_mustache_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle/')
+        self.request.matchdict['name'] = 'test-bundle'
+
+        m_comp.NODE_PATH = None
+
+        res = bundle_view(self.request)
+        self.assertIn(
+            'form-window":Handlebars.compile("<div class=', res.text)
 
     @mock.patch('pyramid_amdjs.mustache.get_localizer')
     def test_build_bundle_toplevel_i18n(self, m_loc):
@@ -146,11 +171,40 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             "Handlebars.registerHelper('i18n-test-bundle'", res.text)
         self.assertIn(
-            'var bundle=new pyramid.Templates("test-bundle",{"form"',
+            'var bundle=new pyramid.Templates("test-bundle",{"form"', res.text)
+        self.assertIn(
+            'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}', res.text)
+
+    @mock.patch('pyramid_amdjs.mustache.compat')
+    @mock.patch('pyramid_amdjs.mustache.get_localizer')
+    def test_build_bundle_toplevel_i18n_no_nodejs(self, m_loc, m_com):
+        from pyramid_amdjs.mustache import bundle_view
+
+        cfg = self.registry.settings
+        cfg['amd.tmpl-langs'] = ['en','pt_BR']
+
+        self.config.add_mustache_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle2/',
+            i18n_domain='pyramid')
+        self.request.matchdict['name'] = 'test-bundle'
+
+        class loc(object):
+            def translate(self, t, i18n):
+                if m_loc.call_args[0][0].locale_name == 'pt_BR':
+                    return 'Senha'
+                return t
+
+        m_loc.return_value = loc()
+        m_com.NODE_PATH = None
+
+        res = bundle_view(self.request)
+        self.assertIn(
+            "Handlebars.registerHelper('i18n-test-bundle'", res.text)
+        self.assertIn(
+            'var bundle=new pyramid.Templates("test-bundle",{"form":Handlebars.compile(',
             res.text)
         self.assertIn(
-            'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}',
-            res.text)
+            'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}', res.text)
 
 
 class TestBuildBundle(BaseTestCase):
@@ -166,23 +220,6 @@ class TestBuildBundle(BaseTestCase):
 
         self.addCleanup(shutil.rmtree, self.path)
 
-    def test_no_nodejs(self):
-        from pyramid_amdjs import mustache
-
-        self.config.add_mustache_bundle(
-            'test-bundle', 'pyramid_amdjs:tests/bundle/')
-        storage = self.registry.get(mustache.ID_BUNDLE)
-
-        node_path = mustache.NODE_PATH
-        try:
-            mustache.NODE_PATH = ''
-            self.assertRaises(
-                RuntimeError, mustache.build_hb_bundle,
-                'pyramid-templates', storage['test-bundle'], self.registry)
-        finally:
-            mustache.NODE_PATH = node_path
-
-
     def test_compile_new(self):
         from pyramid_amdjs import mustache
 
@@ -194,7 +231,7 @@ class TestBuildBundle(BaseTestCase):
             fn.write('<div>{{test}}</div>')
 
         tmpl = text_type(mustache.compile_template(
-            'test', f, mustache.NODE_PATH, self.path)[0])
+            'test', f, mustache.compat.NODE_PATH, self.path)[0])
 
         self.assertTrue(os.path.isfile(
                 os.path.join(self.path, 'test-%s-template'%prefix)))
@@ -202,6 +239,25 @@ class TestBuildBundle(BaseTestCase):
                 os.path.join(self.path, 'test-%s-template.js'%prefix)))
         self.assertIn(
             'function (Handlebars,depth0,helpers,partials,data) {', tmpl)
+
+    def test_compile_no_node(self):
+        from pyramid_amdjs import mustache
+
+        self.cfg['amd.tmpl-cache'] = self.path
+        prefix = os.path.split(self.path)[-1]
+
+        f = os.path.join(self.path, 'template')
+        with open(f, 'w') as fn:
+            fn.write('<div>{{test}}</div>')
+
+        tmpl = text_type(mustache.compile_template(
+            'test', f, None, self.path)[0])
+
+        self.assertTrue(os.path.isfile(
+                os.path.join(self.path, 'test-%s-template'%prefix)))
+        self.assertTrue(os.path.isfile(
+                os.path.join(self.path, 'test-%s-template.pre'%prefix)))
+        self.assertIn('<div>{{test}}</div>', tmpl)
 
     def test_compile_new_i18n(self):
         from pyramid_amdjs import mustache
@@ -214,7 +270,7 @@ class TestBuildBundle(BaseTestCase):
             fn.write('<div>{{test}}{{#i18n}}i18n text{{/i18n}}</div>')
 
         tmpl, i18n = mustache.compile_template(
-            'test', f, mustache.NODE_PATH, self.path)
+            'test', f, mustache.compat.NODE_PATH, self.path)
         tmpl = text_type(tmpl)
 
         self.assertIn('i18n text', i18n)
@@ -247,7 +303,7 @@ class TestBuildBundle(BaseTestCase):
             fn.write('existing2')
 
         tmpl = text_type(mustache.compile_template(
-            'test', f, mustache.NODE_PATH, self.path)[0])
+            'test', f, mustache.compat.NODE_PATH, self.path)[0])
 
         self.assertEqual('existing2', tmpl)
 
@@ -283,7 +339,7 @@ class TestBuildBundle(BaseTestCase):
             fn.write('["existing3"]')
 
         tmpl,i18n = mustache.compile_template(
-            'test', f, mustache.NODE_PATH, self.path)
+            'test', f, mustache.compat.NODE_PATH, self.path)
 
         self.assertEqual(['existing3'], i18n)
 

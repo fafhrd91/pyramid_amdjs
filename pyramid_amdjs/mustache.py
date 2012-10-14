@@ -8,7 +8,8 @@ from pyramid.registry import Introspectable
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.exceptions import ConfigurationError
 
-from .compat import NODE_PATH, json, check_output
+from . import compat
+from .compat import json, check_output
 
 
 ID_BUNDLE = 'pyramid_amdjs:mustache'
@@ -140,7 +141,7 @@ def build_hb_bundle(name, intr, registry):
 
     node_path = cfg['amd.node']
     if not node_path:
-        node_path = NODE_PATH
+        node_path = compat.NODE_PATH
 
     if not cfg['amd.tmpl-cache']:
         cfg['amd.tmpl-cache'] = tempfile.mkdtemp()

@@ -128,35 +128,32 @@ def add_css_module(cfg, name, path, description=''):
     log.info("Add css module: %s path:%s"%(name, path))
 
 
-def extract_mod(filename, path, log):
+def extract_mod(name, text, log):
     mods = {}
-    name = filename.split('.js')[0]
 
-    if os.path.isfile(path):
-        text = text_(open(path, 'rb').read())
-        pos = 0
-        while 1:
-            p1 = text.find('define(', pos)
-            if p1 < 0:
-                break
+    pos = 0
+    while 1:
+        p1 = text.find('define(', pos)
+        if p1 < 0:
+            break
 
-            p2 = text.find('function(', p1)
-            if p2 < 0:
-                break
+        p2 = text.find('function(', p1)
+        if p2 < 0:
+            break
 
-            pos = p2
-            chunk = ''.join(ch.strip() for ch in text[p1+7:p2].split())
-            if chunk.startswith("'") or chunk.startswith('"'):
-                name, chunk = chunk.split(',',1)
-                name = ''.join(ch for ch in name if ch not in "\"'[]")
-            else:
-                log.warning("Empty name is not supported, %s"%filename)
-                continue
+        pos = p2
+        chunk = ''.join(ch.strip() for ch in text[p1+7:p2].split())
+        if chunk.startswith("'") or chunk.startswith('"'):
+            name, chunk = chunk.split(',',1)
+            name = ''.join(ch for ch in name if ch not in "\"'[]")
+        else:
+            log.warning("Empty name is not supported, %s.js"%name)
+            continue
 
-            deps = [d for d in
-                    ''.join(ch for ch in chunk
-                            if ch not in "\"'[]").split(',') if d]
-            mods[name] = deps
+        deps = [d for d in
+                ''.join(ch for ch in chunk
+                        if ch not in "\"'[]").split(',') if d]
+        mods[name] = deps
 
     return mods.items()
 
@@ -175,7 +172,9 @@ def add_amd_dir(cfg, path):
 
         if filename.endswith('.js'):
             for name, deps in extract_mod(
-                    filename, os.path.join(directory, filename), log):
+                    filename[:-3], 
+                    text_(open(os.path.join(directory, filename),'r').read()),
+                    log):
                 mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
             mods.append((filename[:-4], p, CSS_MOD))

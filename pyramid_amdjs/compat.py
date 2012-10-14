@@ -24,8 +24,6 @@ try:
 except: # pragma: no cover
     NODE_PATH = None
 
-NODE_PATH = None
-
 try:
     from collections import OrderedDict
 except ImportError: # pragma: no cover
