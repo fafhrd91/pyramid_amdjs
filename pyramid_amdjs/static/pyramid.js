@@ -1,7 +1,7 @@
 define (
-    'pyramid', ['handlebars'],
+    'pyramid', ['handlebars', 'moment'],
 
-    function (handlebars) {
+    function (handlebars, moment) {
         "use strict";
 
         var console = window.console
@@ -149,7 +149,7 @@ define (
                 this.prototype.__initializers__.slice(0)
 
             for (var p in prototype) {
-                if (pyramid.initializers[p] && 
+                if (pyramid.initializers[p] &&
                     (typeof prototype[p]!=="function"))
                     try {
                         pyramid.initializers[p](
@@ -515,12 +515,12 @@ define (
                     console.log("Can't find template:", name)
                     return ''
                 } else {
-                    try {
+                    //try {
                         return this.templates[name](
                             context, {partials: partials})
-                    } catch(e) {
-                        console.log(e)
-                    }
+                    //} catch(e) {
+                    //    console.log(e, name)
+                    //}
                 }
                 return ''
             }
@@ -538,6 +538,46 @@ define (
 
             return text
         }
+
+        // datetime format
+        var formats = {'short': 'M/D/YY h:mm A',
+                       'medium': 'MMM D, YYY h:mm:ss a',
+                       'full': 'MMMM, D, YYYY h:mm:ss a Z'}
+        if (typeof(datetime_short) != 'undefined')
+            formats['short'] = datetime_short
+        if (typeof(datetime_medium) != 'undefined')
+            formats['medium'] = datetime_medium
+        if (typeof(datetime_full) != 'undefined')
+            formats['full'] = datetime_full
+
+        // handlebars dateTime formatters
+        handlebars.registerHelper(
+            'dateTime', function(text, format) {
+                if (typeof(text) === 'undefined')
+                    text = this
+
+                text = String.trim(text)
+
+                // create date
+                var date = new Date(text)
+                if (isNaN(date.getTime())) {
+                    console.log("Can't parse datetime value:", text)
+                    return text
+                }
+
+                // covnert to local time
+                var localTime = date.getTime()
+                var localOffset = date.getTimezoneOffset() * 60000
+                date = new Date(localTime - localOffset)
+
+                format = formats[format]
+                if (!format)
+                    format = formats['short']
+
+                // print date
+                return moment(date).format(format)
+            }
+        )
 
         return pyramid
     }
