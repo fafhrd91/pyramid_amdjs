@@ -362,7 +362,7 @@ class TestExtractMod(TestCase):
 
         res = extract_mod(
             'test', "define('test2', ['test3', 'test4'], function(){})", None)
-        self.assertEqual(res, [('test2', ['test3', 'test4'])])
+        self.assertEqual(list(res), [('test2', ['test3', 'test4'])])
 
     def test_extract_mod_empty_name(self):
         from pyramid_amdjs.amd import extract_mod
@@ -381,4 +381,4 @@ class TestExtractMod(TestCase):
         from pyramid_amdjs.amd import extract_mod
 
         res = extract_mod('test', "define('test', )", None)
-        self.assertEqual(res, [])
+        self.assertEqual(list(res), [])
