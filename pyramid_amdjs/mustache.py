@@ -65,14 +65,18 @@ def compile_template(name, path, node_path, cache_dir):
 
     # copy to temp dir
     if not os.path.exists(tname) or \
-           (os.path.getmtime(path) > os.path.getmtime(tname)):
+       (os.path.getmtime(path) > os.path.getmtime(tname)):
         with open(tname, 'wb') as f:
             f.write(open(path, 'rb').read())
 
     i18n = []
 
     # check if .js file exists
-    cname = '%s.js'%tname
+    if node_path:
+        cname = '%s.js'%tname
+    else:
+        cname = '%s.pre'%tname
+
     iname = '%s.i18n'%tname
     if os.path.exists(cname) and \
            (os.path.getmtime(tname) <= os.path.getmtime(cname)):
@@ -99,15 +103,18 @@ def compile_template(name, path, node_path, cache_dir):
 
             text.append(data[pos:])
 
+        tmpl = bytes_(''.join(text), 'utf-8')
         with open(tname, 'wb') as f:
-            f.write(bytes_(''.join(text), 'utf-8'))
+            f.write(tmpl)
 
         if i18n:
             with open(iname, 'wb') as f:
                 f.write(bytes_(json.dumps(i18n), 'utf-8'))
 
         # compile
-        tmpl = check_output((node_path, HB, '-s', tname))
+        if node_path:
+            tmpl = check_output((node_path, HB, '-s', tname))
+
         with open(cname, 'wb') as f:
             f.write(tmpl)
 
@@ -131,12 +138,9 @@ class _r(object):
 def build_hb_bundle(name, intr, registry):
     cfg = registry.settings
 
-    node_path = cfg['amd.nodejs']
+    node_path = cfg['amd.node']
     if not node_path:
         node_path = NODE_PATH
-
-    if not node_path:
-        raise RuntimeError("Can't find nodejs")
 
     if not cfg['amd.tmpl-cache']:
         cfg['amd.tmpl-cache'] = tempfile.mkdtemp()
@@ -158,8 +162,7 @@ def build_hb_bundle(name, intr, registry):
                 fname = os.path.join(path, bname)
                 tmpl, _i18n = compile_template(name,fname,node_path,cache_dir)
                 if tmpl:
-                    top.append(text_type('"%s":Handlebars.template(%s)')%(
-                        bname.rsplit('.', 1)[0], tmpl))
+                    top.append((bname.rsplit('.', 1)[0], tmpl))
                 if _i18n:
                     i18n.update(dict((v, None) for v in _i18n))
         else:
@@ -170,17 +173,32 @@ def build_hb_bundle(name, intr, registry):
                     tmpl, _i18n = compile_template(
                         name, fname, node_path, cache_dir)
                     if tmpl:
-                        mustache.append(
-                            text_type('"%s":Handlebars.template(%s)')%(
-                                tname.rsplit('.', 1)[0], tmpl))
+                        mustache.append((tname.rsplit('.', 1)[0], tmpl))
                     if _i18n:
                         i18n.update(dict((v, None) for v in _i18n))
+
+
+            if node_path:
+                mustache = (
+                    text_type('"%s":Handlebars.template(%s)')%(
+                        name, tmpl) for name, tmpl in mustache)
+            else:
+                mustache = (
+                    text_type('"%s":Handlebars.compile(%s)')%(
+                        name, json.dumps(tmpl)) for name, tmpl in mustache)
 
             templates.append(
                 text_type('"%s":new pyramid.Templates("%s",{%s})')%(
                     bname, bname, ','.join(mustache)))
 
     if top:
+        if node_path:
+            top = (text_type('"%s":Handlebars.template(%s)')%(
+                name, tmpl) for name, tmpl in top)
+        else:
+            top = (text_type('"%s":Handlebars.compile(%s)')%(
+                name, json.dumps(tmpl)) for name, tmpl in top)
+
         tmpl = text_type('new pyramid.Templates("%s",{%s},{%s})')%(
             name, text_type(',\n').join(top), text_type(',\n').join(templates))
     else:
