@@ -6,7 +6,7 @@ define (
 
         var console = window.console
 
-        var ptah = {
+        var pyramid = {
             guid: function() {
                 var S4 = function() {
                     return (((1+Math.random())*0x10000)|0)
@@ -533,8 +533,8 @@ define (
 
             if (bundle.__i18n__ &&
                 bundle.__i18n__[text] &&
-                bundle.__i18n__[text][ptah.language])
-                return bundle.__i18n__[text][ptah.language]
+                bundle.__i18n__[text][pyramid.language])
+                return bundle.__i18n__[text][pyramid.language]
 
             return text
         }
