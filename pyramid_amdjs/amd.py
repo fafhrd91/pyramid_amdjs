@@ -210,7 +210,7 @@ def amd_spec(request):
 
 
 @view_config(route_name='pyramid-amd-init')
-def amd_init(request):
+def amd_init(request, **kw):
     specname = request.matchdict['specname']
     storage = request.registry.get(ID_AMD_MODULE)
 
@@ -245,11 +245,8 @@ def amd_init(request):
 
         js.append('"%s":"%s"'%(name, url))
 
-    options = {'pyramid_host': request.application_url,
-               'ptah_dt': {'short': 'm/d/yy h:MM TT',
-                           'medium': 'mmm d, yyyy h:MM:ss TT',
-                           'full': 'mmmm, d, yyyy h:MM:ss TT Z'}
-               }
+    options = {'pyramid_host': request.application_url}
+    options.update(kw)
 
     response = request.response
     response.content_type = 'application/javascript'

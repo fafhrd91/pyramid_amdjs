@@ -22,7 +22,9 @@ try:
     else:
         NODE_PATH = check_output(('which', 'node')).strip()
 except: # pragma: no cover
-    NODE_PATH = ''
+    NODE_PATH = None
+
+NODE_PATH = None
 
 try:
     from collections import OrderedDict

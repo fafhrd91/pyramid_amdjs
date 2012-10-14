@@ -139,7 +139,7 @@ class AmdjsCommand(object):
     def build_bundles(self):
         cfg = self.registry.settings
 
-        node_path = cfg['amd.nodejs']
+        node_path = cfg['amd.node']
         if not node_path:
             node_path = NODE_PATH
 

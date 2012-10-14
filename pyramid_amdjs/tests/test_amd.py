@@ -35,7 +35,7 @@ class TestAmd(BaseTestCase):
 
         data = self.registry.get(ID_AMD_MODULE)
         self.assertIn('test', data)
-        self.assertEqual(data['test']['path'], 
+        self.assertEqual(data['test']['path'],
                          'pyramid_amdjs:tests/dir/test.js')
         self.assertEqual(data['test']['tp'], JS_MOD)
 
@@ -48,7 +48,7 @@ class TestAmd(BaseTestCase):
 
         data = self.registry.get(ID_AMD_MODULE)
         self.assertIn('test', data)
-        self.assertEqual(data['test']['path'], 
+        self.assertEqual(data['test']['path'],
                          'pyramid_amdjs:tests/dir/test3.css')
         self.assertEqual(data['test']['tp'], CSS_MOD)
 
@@ -80,7 +80,7 @@ class TestAmd(BaseTestCase):
         self.config.commit()
 
         data = self.registry.get(ID_AMD_MODULE)
-        self.assertEqual(data['jca-globals']['path'], 
+        self.assertEqual(data['jca-globals']['path'],
                          'pyramid_amdjs:tests/dir/test.js')
 
 
@@ -151,7 +151,7 @@ class TestAmdInit(BaseTestCase):
         self.assertEqual(resp.status, '200 OK')
 
         self.registry[ID_AMD_SPEC] = \
-            {'test': {'pyramid': {'name':'test', 
+            {'test': {'pyramid': {'name':'test',
                                   'path':'pyramid_amdjs:static/example.js'}}}
         resp = amd_init(self.request)
         self.assertIn('"pyramid": "http://example.com/_amd_test/test"', resp.text)
@@ -163,7 +163,7 @@ class TestAmdInit(BaseTestCase):
         self.request.registry = self.registry
         self.registry[ID_AMD_SPEC] = {
             'test': {'underscore':
-                     {'name':'test', 
+                     {'name':'test',
                       'path':'pyramid_amdjs:static/example.js'}}
         }
         resp = amd_init(self.request)
@@ -177,7 +177,7 @@ class TestAmdInit(BaseTestCase):
             'test-mod', 'pyramid_amdjs:tests/dir/test.js')
         self.config.add_amd_css(
             'test-css', 'pyramid_amdjs:tests/dir/test3.css')
-        
+
         self.request.matchdict['specname'] = '_'
 
         resp = amd_init(self.request)

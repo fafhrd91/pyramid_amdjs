@@ -130,7 +130,7 @@ class TestBundleRoute(BaseTestCase):
         cfg['amd.tmpl-langs'] = ['en','pt_BR']
 
         self.config.add_mustache_bundle(
-            'test-bundle', 'pyramid_amdjs:tests/bundle2/', 
+            'test-bundle', 'pyramid_amdjs:tests/bundle2/',
             i18n_domain='pyramid')
         self.request.matchdict['name'] = 'test-bundle'
 
@@ -146,7 +146,7 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             "Handlebars.registerHelper('i18n-test-bundle'", res.text)
         self.assertIn(
-            'var bundle=new pyramid.Templates("test-bundle",{"form"', 
+            'var bundle=new pyramid.Templates("test-bundle",{"form"',
             res.text)
         self.assertIn(
             'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}',
@@ -181,7 +181,7 @@ class TestBuildBundle(BaseTestCase):
                 'pyramid-templates', storage['test-bundle'], self.registry)
         finally:
             mustache.NODE_PATH = node_path
-            
+
 
     def test_compile_new(self):
         from pyramid_amdjs import mustache
