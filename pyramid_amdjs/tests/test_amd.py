@@ -1,7 +1,6 @@
 import os, tempfile
 from pyramid.path import AssetResolver
-from pyramid.config import Configurator
-from pyramid.compat import binary_type, text_type, bytes_
+from pyramid.compat import bytes_
 from pyramid.response import FileResponse
 from pyramid.exceptions import ConfigurationError, ConfigurationConflictError
 from pyramid.httpexceptions import HTTPNotFound
@@ -87,7 +86,7 @@ class TestAmd(BaseTestCase):
 class TestAmdSpec(BaseTestCase):
 
     def test_unknown_spec(self):
-        from pyramid_amdjs.amd import amd_spec, ID_AMD_SPEC
+        from pyramid_amdjs.amd import amd_spec
 
         self.request.matchdict['name'] = 'test.js'
         self.request.matchdict['specname'] = 'test'
@@ -157,7 +156,7 @@ class TestAmdInit(BaseTestCase):
         self.assertIn('"pyramid": "http://example.com/_amd_test/test"', resp.text)
 
     def test_amd_init_with_spec_mustache(self):
-        from pyramid_amdjs.amd import amd_init, ID_AMD_MODULE, ID_AMD_SPEC
+        from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
 
         self.request.matchdict['specname'] = 'test'
         self.request.registry = self.registry
@@ -209,7 +208,7 @@ class TestInitAmdSpec(BaseTestCase):
         super(TestInitAmdSpec, self).tearDown()
 
     def test_empty_spec(self):
-        fn = self._create_file("[test.js]\nmodules = lib1")
+        self._create_file("[test.js]\nmodules = lib1")
 
         cfg = self.registry.settings
         cfg['amd.spec'] = ''
@@ -228,7 +227,7 @@ class TestInitAmdSpec(BaseTestCase):
         cfg = self.registry.settings
         cfg['amd.spec'] = ['%s'%fn, 'test:%s'%fn]
 
-        from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC
+        from pyramid_amdjs.amd import init_amd_spec
 
         # no amd-spec-dir
         self.assertRaises(ConfigurationError, init_amd_spec, self.config)
@@ -373,8 +372,7 @@ class TestExtractMod(TestCase):
                 self.txt = txt
                 
         log = Log()
-        res = extract_mod(
-            'test', "define(['test3', 'test4'], function(){})", log)
+        extract_mod('test', "define(['test3', 'test4'], function(){})", log)
         self.assertEqual(log.txt, "Empty name is not supported, test.js")
 
     def test_extract_mod_no_func(self):

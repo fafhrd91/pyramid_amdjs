@@ -2,8 +2,6 @@ import mock
 import os, shutil
 import sys
 import tempfile
-
-import pyramid
 from pyramid.compat import NativeIO
 from pyramid_amdjs import script as amd
 

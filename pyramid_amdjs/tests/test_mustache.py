@@ -1,8 +1,7 @@
 import mock
 import unittest
 import os, tempfile, shutil, time
-from zope.interface import implementedBy
-from pyramid.compat import binary_type, text_type, text_, NativeIO
+from pyramid.compat import text_type, NativeIO
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError, ConfigurationConflictError
 from pyramid.httpexceptions import HTTPNotFound
@@ -122,6 +121,24 @@ class TestBundleRoute(BaseTestCase):
             '"test-bundle":"http://example.com/_handlebars/test-bundle.js"',
             res.text)
 
+    def test_bundles_amd_spec(self):
+        from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
+
+        self.registry[ID_AMD_SPEC] = {
+            'test': {'test-bundle':
+                     {'name':'bundle',
+                      'path':'pyramid_amdjs:static/example.js'}}
+        }
+        self.config.add_mustache_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle/')
+
+        self.request.matchdict['specname'] = 'test'
+
+        res = amd_init(self.request)
+        self.assertIn(
+            '"test-bundle":"http://example.com/_amd_test/bundle"',
+            res.text)
+
     def test_build_bundle(self):
         from pyramid_amdjs.mustache import bundle_view
 
@@ -215,7 +232,7 @@ class TestBuildBundle(BaseTestCase):
         self.path = tempfile.mkdtemp()
         self.cfg = self.registry.settings
 
-        from pyramid_amdjs import compat, mustache
+        from pyramid_amdjs import mustache
         self.storage = self.registry.get(mustache.ID_BUNDLE)
 
         self.addCleanup(shutil.rmtree, self.path)

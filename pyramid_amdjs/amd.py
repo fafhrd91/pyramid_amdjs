@@ -1,7 +1,7 @@
 import os
 import logging
 from pyramid.path import AssetResolver
-from pyramid.compat import escape, configparser, text_type, string_types, text_
+from pyramid.compat import configparser, text_type, string_types, text_
 from pyramid.view import view_config
 from pyramid.registry import Introspectable
 from pyramid.response import FileResponse
@@ -236,6 +236,7 @@ def amd_init(request, **kw):
             elif intr['tp'] == JS_MOD:
                 js.append('"%s": "%s"'%(name, url))
 
+    # list handlebars bundles, in case if bundle is part of spec
     for name, url in list_bundles(request):
         info = spec.get(name)
         if info and 'path' in info:
@@ -258,7 +259,6 @@ def amd_init(request, **kw):
 
 
 def request_amd_init(request, spec='', bundles=()):
-    registry = request.registry
     cfg = request.registry.settings
 
     c_tmpls = []

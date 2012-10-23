@@ -1,15 +1,12 @@
 """ amdjs command """
 from __future__ import print_function
 import os
-import sys
 import argparse
 import textwrap
 import tempfile
-from pprint import pprint
-from pyramid.compat import configparser, NativeIO, bytes_
+from pyramid.compat import configparser, bytes_
 from pyramid.path import AssetResolver
 from pyramid.paster import bootstrap
-from pyramid.threadlocal import get_current_registry
 
 from pyramid_amdjs.amd import ID_AMD_MODULE, ID_AMD_SPEC
 from pyramid_amdjs.compat import OrderedDict, NODE_PATH
@@ -143,7 +140,7 @@ class AmdjsCommand(object):
         if not node_path:
             node_path = NODE_PATH
 
-        if not node_path: # pragma: no cover
+        if not node_path:
             print ("Can't find nodejs")
             return
 
@@ -156,7 +153,7 @@ class AmdjsCommand(object):
             return
 
         storage = self.registry.get(ID_AMD_MODULE)
-        if not storage: # pragma: no cover
+        if not storage:
             return
 
         resolver = self.resolver
@@ -203,7 +200,7 @@ class AmdjsCommand(object):
                         continue
 
                     intr = storage.get(module)
-                    if not intr: # pragma: no cover
+                    if not intr:
                         print ("Can't find module '%s'"%module)
                         return
 
