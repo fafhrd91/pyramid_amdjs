@@ -34,13 +34,7 @@ def init_amd_spec(config, cache_max_age=None):
     directory = resolver.resolve(cfg['amd.spec-dir']).abspath()
 
     specs = {}
-    for item in cfg['amd.spec']:
-        if ':' not in item:
-            spec = ''
-            specfile = item
-        else:
-            spec, specfile = item.split(':',1)
-
+    for spec, specfile in cfg['amd.spec']:
         if spec in specs:
             raise ConfigurationError("Spec '%s' already defined."%spec)
 
@@ -128,7 +122,7 @@ def add_css_module(cfg, name, path, description=''):
     log.info("Add css module: %s path:%s"%(name, path))
 
 
-def extract_mod(name, text, log):
+def extract_mod(name, text, path):
     mods = {}
 
     pos = 0
@@ -155,6 +149,9 @@ def extract_mod(name, text, log):
                         if ch not in "\"'[]").split(',') if d]
         mods[name] = deps
 
+    if not mods:
+        log.warning("Can't detect module name for: %s"%path)
+
     return mods.items()
 
 
@@ -172,9 +169,9 @@ def add_amd_dir(cfg, path):
 
         if filename.endswith('.js'):
             for name, deps in extract_mod(
-                    filename[:-3], 
+                    filename[:-3],
                     text_(open(os.path.join(directory, filename),'r').read()),
-                    log):
+                    p):
                 mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
             mods.append((filename[:-4], p, CSS_MOD))

@@ -1,6 +1,7 @@
-import os, tempfile
+import os, tempfile, mock
 from pyramid.path import AssetResolver
 from pyramid.compat import bytes_
+from pyramid.config import Configurator
 from pyramid.response import FileResponse
 from pyramid.exceptions import ConfigurationError, ConfigurationConflictError
 from pyramid.httpexceptions import HTTPNotFound
@@ -153,7 +154,8 @@ class TestAmdInit(BaseTestCase):
             {'test': {'pyramid': {'name':'test',
                                   'path':'pyramid_amdjs:static/example.js'}}}
         resp = amd_init(self.request)
-        self.assertIn('"pyramid": "http://example.com/_amd_test/test"', resp.text)
+        self.assertIn('"pyramid": "http://example.com/_amd_test/test"',
+                      resp.text)
 
     def test_amd_init_with_spec_mustache(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -236,7 +238,7 @@ class TestInitAmdSpec(BaseTestCase):
         fn = self._create_file("[test.js]\nmodules = lib1")
 
         cfg = self.registry.settings
-        cfg['amd.spec'] = ['%s'%fn, 'test:%s'%fn]
+        cfg['amd.spec'] = [('', '%s'%fn), ('test', fn)]
         cfg['amd.spec-dir'] = '/test'
 
         from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC
@@ -252,15 +254,15 @@ class TestInitAmdSpec(BaseTestCase):
             "[test.js]\nurl=http://example.com/test.js\nmodules = lib1")
 
         cfg = self.registry.settings
-        cfg['amd.spec'] = [fn]
+        cfg['amd.spec'] = [('test',fn)]
         cfg['amd.spec-dir'] = '/test'
 
         from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC
         init_amd_spec(self.config)
 
         storage = self.registry[ID_AMD_SPEC]
-        self.assertIn('url', storage['']['test.js'])
-        self.assertEqual(storage['']['test.js']['url'],
+        self.assertIn('url', storage['test']['test.js'])
+        self.assertEqual(storage['test']['test.js']['url'],
                          'http://example.com/test.js')
 
     text1 = """
@@ -275,11 +277,27 @@ modules = lib2
         fn = self._create_file(self.text1)
 
         cfg = self.registry.settings
-        cfg['amd.spec'] = ['test:%s'%fn, 'test:%s'%fn]
+        cfg['amd.spec'] = [('test', fn), ('test', fn)]
         cfg['amd.spec-dir'] = '/unknown'
 
         from pyramid_amdjs.amd import init_amd_spec
         self.assertRaises(ConfigurationError, init_amd_spec, self.config)
+
+
+class TestSpecSettings(TestCase):
+
+    def test_spec_settings(self):
+        config = Configurator(settings={'amd.spec.main': '/test',
+                                        'amd.spec.second': '/test1'})
+
+        from pyramid_amdjs import includeme
+
+        includeme(config)
+
+        settings = config.get_settings()
+        self.assertIn('amd.spec', settings)
+        self.assertEqual(
+            settings['amd.spec'], [('main', '/test'),('second', '/test1')])
 
 
 class TestRequestRenderers(BaseTestCase):
@@ -363,17 +381,13 @@ class TestExtractMod(TestCase):
             'test', "define('test2', ['test3', 'test4'], function(){})", None)
         self.assertEqual(list(res), [('test2', ['test3', 'test4'])])
 
-    def test_extract_mod_empty_name(self):
+    @mock.patch('pyramid_amdjs.amd.log')
+    def test_extract_mod_empty_name(self, log):
         from pyramid_amdjs.amd import extract_mod
 
-        class Log(object):
-            txt = None
-            def warning(self, txt):
-                self.txt = txt
-                
-        log = Log()
-        extract_mod('test', "define(['test3', 'test4'], function(){})", log)
-        self.assertEqual(log.txt, "Empty name is not supported, test.js")
+        extract_mod('test', "define(['test3', 'test4'], function(){})", '/test')
+        self.assertEqual("Can't detect module name for: /test",
+                         log.warning.call_args[0][0])
 
     def test_extract_mod_no_func(self):
         from pyramid_amdjs.amd import extract_mod

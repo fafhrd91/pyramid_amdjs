@@ -8,13 +8,19 @@ def includeme(cfg):
     # settings
     settings = cfg.get_settings()
     settings['amd.enabled'] = asbool(settings.get('amd.enabled', 't'))
-    settings['amd.spec'] = [
-        s.strip() for s in aslist(settings.get('amd.spec', ''))]
     settings['amd.spec-dir'] = settings.get('amd.spec-dir', '').strip()
     settings['amd.tmpl-cache'] = settings.get('amd.tmpl-cache', '').strip()
     settings['amd.tmpl-langs'] = [
         s.strip() for s in aslist(settings.get('amd.tmpl-langs', ''))]
     settings['amd.node'] = settings.get('amd.node', '').strip()
+
+    # spec settings
+    specs = []
+    for key, val in sorted(settings.items()):
+        if key.startswith('amd.spec.'):
+            specs.append((key[9:].strip(), val.strip()))
+
+    settings['amd.spec'] = specs
 
     # request methods
     cfg.add_request_method(amd.request_amd_init, 'init_amd')

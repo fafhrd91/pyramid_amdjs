@@ -72,7 +72,7 @@ class TestAmdCommand(BaseTestCase):
 
         self.assertIn('Spec files are not specified in .ini file', val)
 
-        cfg['amd.spec'] = ['main:pyramid_amdjs:tests/amd.spec']
+        cfg['amd.spec'] = [('main', 'pyramid_amdjs:tests/amd.spec')]
 
         out = NativeIO()
         sys.stdout = out
@@ -87,7 +87,7 @@ class TestAmdCommand(BaseTestCase):
 
         out = NativeIO()
         sys.stdout = out
-        amd.main(False)
+        amd.main()
         sys.stdout = stdout
         val = out.getvalue()
 

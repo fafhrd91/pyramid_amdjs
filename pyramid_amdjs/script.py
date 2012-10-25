@@ -158,14 +158,10 @@ class AmdjsCommand(object):
 
         resolver = self.resolver
 
-        specs = OrderedDict()
-        for item in cfg['amd.spec']:
-            spec, specfile = item.split(':',1)
-            specs[spec] = specfile
-
         UGLIFY = resolver.resolve(
             'pyramid_amdjs:node_modules/uglify-js/bin/uglifyjs').abspath()
 
+        specs = OrderedDict(cfg['amd.spec'])
         for spec, specfile in specs.items():
             print("\n\nProcessing: %s (%s)"%(spec, specfile))
             f = resolver.resolve(specfile).abspath()
