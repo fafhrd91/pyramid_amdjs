@@ -150,7 +150,8 @@ def extract_mod(name, text, path):
         mods[name] = deps
 
     if not mods:
-        log.warning("Can't detect module name for: %s"%path)
+        log.warning("Can't detect amdjs module name for: %s"%path)
+        raise ConfigurationError("Can't detect amdjs module name for: %s"%path)
 
     return mods.items()
 

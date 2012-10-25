@@ -385,12 +385,16 @@ class TestExtractMod(TestCase):
     def test_extract_mod_empty_name(self, log):
         from pyramid_amdjs.amd import extract_mod
 
-        extract_mod('test', "define(['test3', 'test4'], function(){})", '/test')
-        self.assertEqual("Can't detect module name for: /test",
+        self.assertRaises(
+            ConfigurationError,
+            extract_mod,
+            'test', "define(['test3', 'test4'], function(){})", '/test')
+        self.assertEqual("Can't detect amdjs module name for: /test",
                          log.warning.call_args[0][0])
 
     def test_extract_mod_no_func(self):
         from pyramid_amdjs.amd import extract_mod
 
-        res = extract_mod('test', "define('test', )", None)
-        self.assertEqual(list(res), [])
+        self.assertRaises(
+            ConfigurationError,
+            extract_mod, 'test', "define('test', )", None)
