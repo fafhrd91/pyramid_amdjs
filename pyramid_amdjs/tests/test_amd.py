@@ -56,11 +56,11 @@ class TestAmd(BaseTestCase):
         from pyramid_amdjs.amd import ID_AMD_MODULE
 
         self.config.add_amd_js(
-            'test', 'pyramid_amdjs:tests/dir/test.js', require='test2')
+            'test', 'pyramid_amdjs:tests/dir/test.js', requires='test2')
         self.config.commit()
 
         data = self.registry.get(ID_AMD_MODULE)
-        self.assertEqual(data['test']['require'], ('test2',))
+        self.assertEqual(data['test']['requires'], ('test2',))
 
     def test_reg_conflict(self):
         self.config.commit()
@@ -143,7 +143,10 @@ class TestAmdInit(BaseTestCase):
             'pyramid': {'path':'pyramid_amdjs:static/pyramid_amdjs.js',
                         'tp': JS_MOD}}
         self.registry[ID_AMD_SPEC] = \
-            {'test': {'pyramid': {'url': 'http://test.com/example.js'}}}
+            {'test': {'pyramid': {'url': 'http://test.com/example.js'}},
+             'test-init': ''}
+
+        self.registry.settings['amd.enabled'] = False
 
         self.request.matchdict['specname'] = 'test'
 
@@ -154,8 +157,7 @@ class TestAmdInit(BaseTestCase):
             {'test': {'pyramid': {'name':'test',
                                   'path':'pyramid_amdjs:static/example.js'}}}
         resp = amd_init(self.request)
-        self.assertIn('"pyramid": "http://example.com/_amd_test/test"',
-                      resp.text)
+        self.assertIn('"pyramid": "/_amd_test/test"', resp.text)
 
     def test_amd_init_with_spec_mustache(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -168,8 +170,7 @@ class TestAmdInit(BaseTestCase):
                       'path':'pyramid_amdjs:static/example.js'}}
         }
         resp = amd_init(self.request)
-        self.assertIn(
-            '"underscore": "http://example.com/_amd_test/test"', resp.text)
+        self.assertIn('"underscore": "/_amd_test/test"', resp.text)
 
     def test_amd_mod_paths(self):
         from pyramid_amdjs.amd import amd_init
@@ -184,9 +185,9 @@ class TestAmdInit(BaseTestCase):
         resp = amd_init(self.request)
         self.assertIn('var pyramid_amd_modules = {', resp.text)
         self.assertIn(
-            '"test-mod": "http://example.com/_tests/test.js"', resp.text)
+            '"test-mod": "/_tests/test.js"', resp.text)
         self.assertIn(
-            '"test-css.css": "http://example.com/_tests/test3.css"', resp.text)
+            '"test-css.css": "/_tests/test3.css"', resp.text)
 
 
 class TestInitAmdSpec(BaseTestCase):
@@ -251,11 +252,15 @@ class TestInitAmdSpec(BaseTestCase):
 
     def test_bundle_with_url(self):
         fn = self._create_file(
-            "[test.js]\nurl=http://example.com/test.js\nmodules = lib1")
+            "[init]\nbase=http://example2.com\n\n[test.js]\n"
+            "modules = lib1\n  test-bundle")
 
         cfg = self.registry.settings
         cfg['amd.spec'] = [('test',fn)]
         cfg['amd.spec-dir'] = '/test'
+
+        self.config.add_mustache_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC
         init_amd_spec(self.config)
@@ -263,7 +268,12 @@ class TestInitAmdSpec(BaseTestCase):
         storage = self.registry[ID_AMD_SPEC]
         self.assertIn('url', storage['test']['test.js'])
         self.assertEqual(storage['test']['test.js']['url'],
-                         'http://example.com/test.js')
+                         'http://example2.com/test.js')
+
+        from pyramid_amdjs.amd import build_init
+        self.assertIn(
+            '"test-bundle":"http://example2.com/test.js"',
+            build_init(self.request, 'test'))
 
     text1 = """
 [test.js]
@@ -320,7 +330,8 @@ class TestRequestRenderers(BaseTestCase):
 
         text = self.request.init_amd().strip()
         self.assertEqual(
-            text, '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script src="http://example.com/_amd__.js"> </script>')
+            '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script type="text/javascript">AMDJS_APP_URL="http://example.com";</script>\n<script src="http://example.com/_amd__.js"> </script>',
+            text)
 
         text = self.request.init_amd('test-spec').strip()
         self.assertIn(
@@ -353,7 +364,7 @@ class TestRequestRenderers(BaseTestCase):
 
         text = self.request.init_amd().strip()
         self.assertEqual(
-            text, '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script src="http://example.com/_amd__.js"> </script>')
+            '<script src="http://example.com/_amdjs/static/lib/curl.js"> </script>\n<script type="text/javascript">AMDJS_APP_URL="http://example.com";</script>\n<script src="http://example.com/_amd__.js"> </script>', text)
 
     def test_render_amd_includes_spec(self):
         from pyramid_amdjs.amd import ID_AMD_SPEC

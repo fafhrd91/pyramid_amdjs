@@ -49,37 +49,44 @@ def init_amd_spec(config, cache_max_age=None):
         parser.read(f)
 
         mods = {}
-        for section in parser.sections():
-            if section.endswith('.js'):
-                items = dict(parser.items(section))
-                url = items.get('url', '')
-                modules = items.get('modules', '')
-                modules = [s for s in [s.strip() for s in modules.split()]
-                           if not s.startswith('#')]
+        if parser.has_option('init', 'base'):
+            base_url = parser.get('init', 'base')
+        else:
+            base_url = ''
 
-                if url:
-                    item = {'url': url, 'name': section}
-                elif modules:
-                    item = {'name': section,
-                            'path': os.path.join(directory,section)}
+        for section in parser.sections():
+            items = dict(parser.items(section))
+
+            if section.endswith('.js'):
+                modules = [s for s in
+                           [s.strip() for s in items.get('modules', '').split()]
+                           if not s.startswith('#')]
+                if modules:
+                    if base_url:
+                        item = {'name': section,
+                                'url': '%s/%s'%(base_url, section)}
+                    else:
+                        item = {'name': section,
+                                'path': os.path.join(directory,section)}
 
                 mods[section] = item
                 for mod in modules:
                     mods[mod] = item
 
         spec_mods[spec] = mods
+        spec_mods['%s-init'%spec] = os.path.join(directory, 'init-%s.js'%spec)
 
     config.registry[ID_AMD_SPEC] = spec_mods
     config.registry[ID_AMD_SPEC_] = cache_max_age
 
 
-def add_js_module(cfg, name, path, description='', require=()):
+def add_js_module(cfg, name, path, description='', requires=()):
     """ register amd js module
 
     :param name: name
     :param path: asset path
     :param description: module description
-    :param deps: module dependencies
+    :param requires: module dependencies
     """
     discr = (ID_AMD_MODULE, name)
 
@@ -89,9 +96,9 @@ def add_js_module(cfg, name, path, description='', require=()):
     intr['description'] = description
     intr['tp'] = JS_MOD
 
-    if isinstance(require, str):
-        require = (require,)
-    intr['require'] = require
+    if isinstance(requires, str):
+        requires = (requires,)
+    intr['requires'] = requires
 
     storage = cfg.registry.setdefault(ID_AMD_MODULE, {})
     storage[name] = intr
@@ -188,7 +195,14 @@ def add_amd_dir(cfg, path):
 
 AMD_INIT_TMPL = """
 var pyramid_amd_modules = {\n%(mods)s}
-%(exrta)s
+
+if (typeof(AMDJS_APP_URL) !== 'undefined') {
+  for (var name in pyramid_amd_modules) {
+      var prefix = pyramid_amd_modules[name].substr(0, 7)
+      if (prefix !== 'http://' && prefix !== 'https:/')
+          pyramid_amd_modules[name] = AMDJS_APP_URL + pyramid_amd_modules[name]
+  }
+}
 
 curl({dontAddFileExt:'.', paths: pyramid_amd_modules})
 """
@@ -206,28 +220,40 @@ def amd_spec(request):
         spec[name]['path'], request, request.registry.get(ID_AMD_SPEC_))
 
 
-@view_config(route_name='pyramid-amd-init')
-def amd_init(request, **kw):
-    specname = request.matchdict['specname']
+def build_init(request, specname):
     storage = request.registry.get(ID_AMD_MODULE)
 
-    spec = request.registry.get(ID_AMD_SPEC, {}).get(specname)
-    if spec is None and specname != '_':
-        return HTTPNotFound()
+    spec_data = request.registry.get(ID_AMD_SPEC, {}).get(specname)
+    if spec_data is None and specname != '_':
+        return None
 
     js = []
-    if spec is None:
-        spec = {}
+    if spec_data is None:
+        spec_data = {}
+
+    app_url = request.application_url
+    app_url_len = len(app_url)
+
+    spec_cache = {}
 
     if storage:
         for name, intr in storage.items():
             path = intr['path']
-            info = spec.get(name)
-            if info and 'path' in info:
-                url = request.route_url(
-                    'pyramid-amd-spec', specname=specname, name=info['name'])
+            info = spec_data.get(name)
+            if info:
+                if 'path' in info:
+                    url = spec_cache.get(info['name'])
+                    if not url:
+                        url = spec_cache[info['name']] = request.route_url(
+                            'pyramid-amd-spec',
+                            specname=specname, name=info['name'])
+                else:
+                    url = info['url']
             else:
                 url = '%s'%request.static_url(path)
+
+            if url.startswith(app_url):
+                url = url[app_url_len:]
 
             if intr['tp'] == CSS_MOD:
                 js.append('"%s.css": "%s"'%(name, url))
@@ -236,23 +262,44 @@ def amd_init(request, **kw):
 
     # list handlebars bundles, in case if bundle is part of spec
     for name, url in list_bundles(request):
-        info = spec.get(name)
-        if info and 'path' in info:
-            url = request.route_url(
-                'pyramid-amd-spec', specname=specname, name=info['name'])
+        info = spec_data.get(name)
+        if info:
+            if 'path' in info:
+                url = spec_cache.get(info['name'])
+                if not url:
+                    url = spec_cache[info['name']] = request.route_url(
+                        'pyramid-amd-spec',
+                        specname=specname, name=info['name'])
+            else:
+                url = info['url']
+
+        if url.startswith(app_url):
+            url = url[app_url_len:]
 
         js.append('"%s":"%s"'%(name, url))
 
-    options = {'pyramid_host': request.application_url}
-    options.update(kw)
+    return text_type(AMD_INIT_TMPL%{'mods': ',\n'.join(sorted(js))})
+
+
+@view_config(route_name='pyramid-amd-init')
+def amd_init(request, **kw):
+    cfg = request.registry.settings
+    specstorage = request.registry.get(ID_AMD_SPEC, {})
+    specname = request.matchdict['specname']
+    specdata = specstorage.get(specname)
+
+    initfile = '%s-init'%specname
+    if specdata and cfg['amd.enabled'] and initfile in specstorage:
+        return FileResponse(
+            specstorage[initfile], request, request.registry.get(ID_AMD_SPEC_))
+
+    text = build_init(request, specname)
+    if text is None:
+        return HTTPNotFound()
 
     response = request.response
     response.content_type = 'application/javascript'
-    response.text = text_type(AMD_INIT_TMPL%{
-        'app_url': request.application_url,
-        'mods': ',\n'.join(sorted(js)),
-        'exrta': '\n'.join('var %s = %s'%(name, json.dumps(val))
-                           for name, val in options.items())})
+    response.text = text
     return response
 
 
@@ -272,6 +319,9 @@ def request_amd_init(request, spec='', bundles=()):
     c_tmpls.append(
         '<script src="%s"> </script>'%
         request.static_url('pyramid_amdjs:static/lib/curl.js'))
+    c_tmpls.append(
+        '<script type="text/javascript">'
+        'AMDJS_APP_URL="%s";</script>'%(request.application_url,))
     c_tmpls.append(
         '<script src="%s/_amd_%s.js"> </script>'%(
             request.application_url, spec))

@@ -23,7 +23,7 @@ define (
             }
 
             , gen_url: function(path) {
-                var host = window.pyramid_host || '//' + window.location.host
+                var host = window.AMDJS_APP_URL || '//' + window.location.host
                 if (host[host.length-1] === '/')
                     host = host.substr(host.length-1, 1)
 

@@ -12,7 +12,7 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_no_params(self, m_bs):
-        m_bs.return_value = {'registry': self.registry}
+        m_bs.return_value = {'registry': self.registry, 'request': self.request}
 
         sys.argv[:] = ['amdjs', 'pyramid_amdjs.ini']
 
@@ -29,7 +29,7 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_list_modules(self, m_bs):
-        m_bs.return_value = {'registry': self.registry}
+        m_bs.return_value = {'registry': self.registry, 'request': self.request}
 
         self.config.add_amd_js(
             'test', 'pyramid_amdjs:tests/dir/test.js', 'Test module')
@@ -50,7 +50,7 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_build_bundle(self, m_bs):
-        m_bs.return_value = {'registry': self.registry}
+        m_bs.return_value = {'registry': self.registry, 'request': self.request}
 
         self.config.add_amd_js(
             'test', 'pyramid_amdjs:tests/dir/test.js', 'Test module')

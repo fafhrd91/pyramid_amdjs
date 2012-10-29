@@ -117,9 +117,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = '_'
 
         res = amd_init(self.request)
-        self.assertIn(
-            '"test-bundle":"http://example.com/_handlebars/test-bundle.js"',
-            res.text)
+        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js"', res.text)
 
     def test_bundles_amd_spec(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -135,9 +133,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = 'test'
 
         res = amd_init(self.request)
-        self.assertIn(
-            '"test-bundle":"http://example.com/_amd_test/bundle"',
-            res.text)
+        self.assertIn('"test-bundle":"/_amd_test/bundle"', res.text)
 
     def test_build_bundle(self):
         from pyramid_amdjs.mustache import bundle_view

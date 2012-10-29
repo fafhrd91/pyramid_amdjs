@@ -4,13 +4,13 @@ import os
 import argparse
 import textwrap
 import tempfile
-from pyramid.compat import configparser, bytes_
+from pyramid.compat import configparser, bytes_, text_type
 from pyramid.path import AssetResolver
 from pyramid.paster import bootstrap
 
-from pyramid_amdjs.amd import ID_AMD_MODULE, ID_AMD_SPEC
-from pyramid_amdjs.compat import OrderedDict, NODE_PATH
-from pyramid_amdjs.mustache import build_hb_bundle, check_output, ID_BUNDLE
+from .amd import JS_MOD, CSS_MOD, ID_AMD_MODULE, ID_AMD_SPEC, build_init
+from .compat import OrderedDict, NODE_PATH, check_output
+from .mustache import ID_BUNDLE, build_hb_bundle
 
 
 grpTitleWrap = textwrap.TextWrapper(
@@ -54,6 +54,7 @@ class AmdjsCommand(object):
         self.options = args
         self.env = bootstrap(args.config)
         self.registry = self.env['registry']
+        self.request = self.env['request']
         self.resolver = AssetResolver()
 
     def run(self):
@@ -86,7 +87,7 @@ class AmdjsCommand(object):
                         if deps:
                             return deps
 
-        return mod['require']
+        return mod['requires']
 
     def deps_tree(self):
         print()
@@ -164,10 +165,19 @@ class AmdjsCommand(object):
         specs = OrderedDict(cfg['amd.spec'])
         for spec, specfile in specs.items():
             print("\n\nProcessing: %s (%s)"%(spec, specfile))
+
             f = resolver.resolve(specfile).abspath()
             parser = configparser.SafeConfigParser()
             parser.read(f)
 
+            # build init js
+            text = build_init(self.request, spec)
+            if text is not None:
+                initpath = os.path.join(cfg['amd.spec-dir'], 'init-%s.js'%spec)
+                with open(initpath, 'wb') as dest:
+                    dest.write(text)
+
+            # build js bundle
             bundles = []
             processed = []
 
