@@ -325,7 +325,7 @@ class TestRequestRenderers(BaseTestCase):
         from pyramid.request import Request
         return Request(environ=self._environ)
 
-    def test_render_js_includes(self):
+    def test_render_init_amd(self):
         self.cfg['amd.enabled'] = False
 
         text = self.request.init_amd().strip()
@@ -337,19 +337,27 @@ class TestRequestRenderers(BaseTestCase):
         self.assertIn(
             '<script src="http://example.com/_amd__.js"> </script>', text)
 
+    def test_render_init_amd_debug(self):
+        self.cfg['amd.enabled'] = False
+
+        text = self.request.init_amd(debug=True).strip()
+        self.assertEqual(
+            '<script src="http://example.com/_amdjs/static/lib/curl-debug.js"> </script>\n<script type="text/javascript">AMDJS_APP_URL="http://example.com";</script>\n<script src="http://example.com/_amd__.js"> </script>',
+            text)
+
     def test_include_js(self):
         text = self.request.include_js('test').strip()
         self.assertIn(
-            "curl(['test'],{paths:pyramid_amd_modules})", text)
+            "curl({paths:pyramid_amd_modules},['test'])", text)
 
         text = self.request.include_js('test', 'test-css').strip()
         self.assertIn(
-            "curl(['test','css!test-css.css'],{paths:pyramid_amd_modules})", text)
+            "curl({paths:pyramid_amd_modules},['test','css!test-css.css'])", text)
 
     def test_include_css(self):
         text = self.request.include_css('test-css').strip()
         self.assertIn(
-            "curl(['css!test-css.css'],{paths:pyramid_amd_modules})", text)
+            "curl({paths:pyramid_amd_modules},['css!test-css.css'])", text)
 
     def test_render_js_includes_unknown_spec(self):
         self.cfg['amd.enabled'] = True

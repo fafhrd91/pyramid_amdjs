@@ -303,7 +303,7 @@ def amd_init(request, **kw):
     return response
 
 
-def request_amd_init(request, spec='', bundles=()):
+def request_amd_init(request, spec='', bundles=(), debug=False):
     cfg = request.registry.settings
 
     c_tmpls = []
@@ -316,9 +316,14 @@ def request_amd_init(request, spec='', bundles=()):
         spec = '_'
         specdata = ()
 
-    c_tmpls.append(
-        '<script src="%s"> </script>'%
-        request.static_url('pyramid_amdjs:static/lib/curl.js'))
+    if debug:
+        c_tmpls.append(
+            '<script src="%s"> </script>'%
+            request.static_url('pyramid_amdjs:static/lib/curl-debug.js'))
+    else:
+        c_tmpls.append(
+            '<script src="%s"> </script>'%
+            request.static_url('pyramid_amdjs:static/lib/curl.js'))
     c_tmpls.append(
         '<script type="text/javascript">'
         'AMDJS_APP_URL="%s";</script>'%(request.application_url,))
@@ -347,7 +352,7 @@ def request_includes(request, js=(), css=()):
 
     mods.extend("'css!%s.css'"%c for c in css)
 
-    return ("<script>curl([%s],{paths:pyramid_amd_modules})</script>" %
+    return ('<script type="text/javascript">curl({paths:pyramid_amd_modules},[%s])</script>' %
             ','.join(mods))
 
 
@@ -355,5 +360,5 @@ def request_css_includes(request, css=()):
     if isinstance(css, string_types):
         css = (css,)
 
-    return ("<script>curl([%s],{paths:pyramid_amd_modules})</script>" %
+    return ('<script type="text/javascript">curl({paths:pyramid_amd_modules},[%s])</script>' %
             ','.join("'css!%s.css'"%c for c in css))

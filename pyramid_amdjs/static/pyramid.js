@@ -1,4 +1,4 @@
-define (
+define(
     'pyramid', ['handlebars', 'moment'],
 
     function (handlebars, moment) {

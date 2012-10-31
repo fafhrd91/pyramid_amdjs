@@ -33,4 +33,4 @@ def includeme(config):
     # pyramid
     config.add_amd_js(
         'pyramid', 'pyramid_amdjs:static/pyramid.js',
-        'Pyramid amdjs', ('handlebars',))
+        'Pyramid amdjs', ('handlebars','moment'))
