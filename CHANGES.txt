@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.1 (Unreleased)
+0.1 (11-01-2012)
 ================
 
 - Initial release
