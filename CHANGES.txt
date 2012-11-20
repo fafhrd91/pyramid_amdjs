@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.2 (Unreleased)
+================
+
+- Added twitter bootstrap
+
+
 0.1 (11-01-2012)
 ================
 
