@@ -2,13 +2,15 @@
 CHANGES
 =======
 
-0.2 (Unreleased)
-================
+0.2 (12-11-2012)
+----------------
 
-- Added twitter bootstrap
+- Added twitter bootstrap (2.2.2)
+
+- Allow to pass all params in options for pyramid.Object (javascript)
 
 
 0.1 (11-01-2012)
-================
+----------------
 
 - Initial release

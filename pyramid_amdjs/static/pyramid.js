@@ -329,9 +329,8 @@ define(
         pyramid.View = pyramid.Object.extend({
             __name__: 'pyramid.View'
 
-            , __init__: function(parent, dom, options) {
+            , __init__: function(parent, options) {
                 this.__parent__ = parent
-                this.__container__ = dom
                 this.__uuid__ = pyramid.guid()
                 this.__destroyed__ = false
                 this.__views__ = new Array()
@@ -339,15 +338,23 @@ define(
                 if (typeof(options) === 'undefined')
                     options = {}
 
-                if (options.__id__)
-                    this.__id__ = options.__id__
+                if (options.container)
+                    this.__container__ = options.container
 
-                if (this.__id__)
-                    dom.append('<div id="'+this.__id__+
-                               '" data-uuid="'+this.__uuid__+'"></div>')
-                else
-                    dom.append('<div data-uuid="'+this.__uuid__+'"></div>')
-                this.__dom__ = $('[data-uuid="'+this.__uuid__+'"]', dom)
+                if (options.id)
+                    this.__id__ = options.id
+
+                if (options.dom) {
+                    this.__dom__ = options.dom
+                    this.__id__ = this.__dom__.id
+                } else {
+                    if (this.__id__)
+                        dom.append('<div id="'+this.__id__+
+                                   '" data-uuid="'+this.__uuid__+'"></div>')
+                    else
+                        dom.append('<div data-uuid="'+this.__uuid__+'"></div>')
+                    this.__dom__ = $('[data-uuid="'+this.__uuid__+'"]', dom)
+                }
 
                 this.options = options
                 this.events = new pyramid.EventChannel('on_')
@@ -455,7 +462,8 @@ define(
                         if (that.view)
                             that.view.hide()
 
-                        var comp = new factory(that, that.__workspace__)
+                        var comp = new factory(
+                            that, {container:that.__workspace__})
                         comp.__view_name__ = name
                         that.view = comp
                         that.view.show(options)
