@@ -2,10 +2,10 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version='0.2'
+version='0.2.1'
 
 install_requires = ['setuptools',
-                    'pyramid >= 1.4b3',
+                    'pyramid >= 1.4',
 ]
 
 if sys.version_info[:2] == (2, 6):

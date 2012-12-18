@@ -328,8 +328,8 @@ def request_amd_init(request, spec='', bundles=(), debug=False):
         '<script type="text/javascript">'
         'AMDJS_APP_URL="%s";</script>'%(request.application_url,))
     c_tmpls.append(
-        '<script src="%s/_amd_%s.js"> </script>'%(
-            request.application_url, spec))
+        '<script src="%s"> </script>'%(
+            request.route_url('pyramid-amd-init', specname=spec)))
 
     for name in (bundles if not isinstance(bundles, str) else (bundles,)):
         name = '%s.js'%name
