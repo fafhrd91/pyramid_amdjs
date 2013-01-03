@@ -19,6 +19,15 @@ class TestBundleDirective(BaseTestCase):
 
         self.assertTrue(hasattr(self.config, 'add_mustache_bundle'))
 
+    def test_handlebars_mod(self):
+        self.config.include('pyramid_amdjs')
+
+        from pyramid_amdjs import amd
+
+        text = amd.build_init(self.request, '_')
+        self.assertIn(
+            '"handlebars": "/_amdjs/static/lib/handlebars.runtime.js?_v=', text)
+
 
 class TestBundleReg(BaseTestCase):
 
@@ -358,7 +367,7 @@ class TestBuildBundle(BaseTestCase):
         self.assertEqual(['existing3'], i18n)
 
 
-class TextExtractI18N(unittest.TestCase):
+class TestExtractI18N(unittest.TestCase):
 
     def test_extract(self):
         from pyramid_amdjs.mustache import extract_i18n_mustache
@@ -367,3 +376,25 @@ class TextExtractI18N(unittest.TestCase):
 
         d = extract_i18n_mustache(f, [], [], [])
         self.assertEqual(d[0], (5, None, text_type('Test \n message'), []))
+
+
+class TestNoNodeJS(BaseTestCase):
+
+    def setUp(self):
+        from pyramid_amdjs import static
+        self.node_path = static.NODE_PATH
+
+        static.NODE_PATH = None
+
+        super(TestNoNodeJS, self).setUp()
+
+    def tearDown(self):
+        from pyramid_amdjs import static
+        static.NODE_PATH = self.node_path
+
+    def test_handlebars_mod(self):
+        from pyramid_amdjs import amd
+
+        text = amd.build_init(self.request, '_')
+        self.assertIn(
+            '"handlebars": "/_amdjs/static/lib/handlebars.js?_v=', text)

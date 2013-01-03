@@ -2,8 +2,9 @@ import sys
 from pyramid import testing
 from pyramid.interfaces import IRequest
 
-if sys.version_info[:2] == (2, 6): # pragma: no cover
+if sys.version_info[:2] == (2, 6):
     from unittest2 import TestCase
+    TestCase
 else:
     from unittest import TestCase
 
@@ -12,7 +13,7 @@ class BaseTestCase(TestCase):
 
     _include = True
     _auto_include = True
-    _settings = {}
+    _settings = {'amd.debug': 'f'}
     _environ = {
         'wsgi.url_scheme':'http',
         'wsgi.version':(1,0),

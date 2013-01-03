@@ -57,11 +57,10 @@ def load_dir(registry, dirname, directory):
         p = os.path.join(dirname, filename)
 
         if filename.endswith('.js'):
-            for name, deps in amd.extract_mod(
-                    filename[:-3],
-                    text_(open(os.path.join(directory, filename),'r').read()),
-                    p):
-                mods.append((name, p, amd.JS_MOD, filepath))
+            with open(os.path.join(directory, filename),'r') as f:
+                for name, deps in amd.extract_mod(
+                        filename[:-3], text_(f.read()), p):
+                    mods.append((name, p, amd.JS_MOD, filepath))
         if filename.endswith('.css'):
             mods.append((filename[:-4], p, amd.CSS_MOD, filepath))
 
@@ -74,7 +73,7 @@ def load_dir(registry, dirname, directory):
             log.info("Update module information: %s path:%s", name, fname)
 
             md5 = hashlib.md5()
-            md5.update(open(fpath, 'r').read())
+            md5.update(open(fpath, 'rb').read())
             all_mods[name] = {
                 'fname': fname, 'tp': tp, 'fpath': fpath,
                 'md5': md5.hexdigest()}

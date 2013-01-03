@@ -7,7 +7,7 @@ def includeme(cfg):
 
     # settings
     settings = cfg.get_settings()
-    settings['amd.debug'] = asbool(settings.get('amd.debug', 'f'))
+    settings['amd.debug'] = asbool(settings.get('amd.debug', 't'))
     settings['amd.enabled'] = asbool(settings.get('amd.enabled', 't'))
     settings['amd.app-url'] = settings.get('amd.app-url', '').strip()
     settings['amd.spec-dir'] = settings.get('amd.spec-dir', '').strip()
@@ -23,6 +23,7 @@ def includeme(cfg):
             specs.append((key[9:].strip(), val.strip()))
 
     settings['amd.spec'] = specs
+    cfg.registry[amd.ID_AMD_SPEC] = {}
 
     # request methods
     cfg.add_request_method(amd.request_amd_init, 'init_amd')

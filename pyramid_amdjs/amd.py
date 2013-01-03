@@ -29,7 +29,6 @@ CURL_PATH = RESOLVER.resolve('pyramid_amdjs:static/lib/curl.js').abspath()
 
 def init_amd_spec(config, cache_max_age=None):
     cfg = config.get_settings()
-    config.registry[ID_AMD_SPEC] = {}
     if not cfg['amd.spec']:
         return
 
@@ -238,7 +237,7 @@ def amd_spec(request):
     name = request.matchdict['name']
     specname = request.matchdict['specname']
 
-    spec = request.registry.get(ID_AMD_SPEC, {}).get(specname, ())
+    spec = request.registry[ID_AMD_SPEC].get(specname, ())
     if name not in spec or 'path' not in spec[name]:
         return HTTPNotFound()
 
@@ -253,7 +252,7 @@ def build_md5(request, specname):
     h = data.get(specname)
     if h is None:
         cfg = request.registry.settings
-        specstorage = request.registry.get(ID_AMD_SPEC, {})
+        specstorage = request.registry[ID_AMD_SPEC]
         specdata = specstorage.get(specname)
 
         initfile = '%s-init'%specname
@@ -275,7 +274,7 @@ def build_md5(request, specname):
 def build_init(request, specname, extra=()):
     storage = request.registry.get(ID_AMD_MODULE)
 
-    spec_data = request.registry.get(ID_AMD_SPEC, {}).get(specname)
+    spec_data = request.registry[ID_AMD_SPEC].get(specname)
     if spec_data is None and specname != '_':
         return None
 
@@ -342,7 +341,7 @@ def build_init(request, specname, extra=()):
 @view_config(route_name='pyramid-amd-init')
 def amd_init(request, **kw):
     cfg = request.registry.settings
-    specstorage = request.registry.get(ID_AMD_SPEC, {})
+    specstorage = request.registry[ID_AMD_SPEC]
     specname = request.matchdict['specname']
     specdata = specstorage.get(specname)
     cache_max_age = 31536000 if request.params.get('_v') else None
@@ -371,7 +370,7 @@ def request_amd_init(request, spec='', bundles=()):
 
     c_tmpls = []
     if spec and cfg['amd.enabled']:
-        specstorage = reg.get(ID_AMD_SPEC, {})
+        specstorage = reg[ID_AMD_SPEC]
         specdata = specstorage.get(spec)
         if specdata is None:
             raise RuntimeError("Spec '%s' is not found."%spec)

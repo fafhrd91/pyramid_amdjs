@@ -23,7 +23,7 @@ grpDescriptionWrap = textwrap.TextWrapper(
     subsequent_indent='    ')
 
 
-def main(init=True):
+def main():
     args = AmdjsCommand.parser.parse_args()
     cmd = AmdjsCommand(args)
     cmd.run()
@@ -72,7 +72,7 @@ class AmdjsCommand(object):
         if mod['path']:
             path = self.resolver.resolve(mod['path']).abspath()
             if os.path.isfile(path) and path.endswith('.js'):
-                text = open(path, 'rb').read()
+                text = open(path, 'rb').read().decode('utf-8')
                 p1 = text.find('define(')
                 if p1 >= 0:
                     p2 = text.find('function(')
@@ -181,7 +181,7 @@ class AmdjsCommand(object):
                     md5.hexdigest(), text)
 
                 initpath = os.path.join(cfg['amd.spec-dir'], 'init-%s.js'%spec)
-                with open(initpath, 'wb') as dest:
+                with open(initpath, 'w') as dest:
                     dest.write(text)
 
             # build js bundle

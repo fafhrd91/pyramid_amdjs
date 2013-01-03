@@ -14,10 +14,12 @@ class TestAmdDirective(BaseTestCase):
     _include = False
 
     def test_amd_directive(self):
+        self.assertFalse(hasattr(self.config, 'add_amd_dir'))
         self.assertFalse(hasattr(self.config, 'add_amd_js'))
         self.assertFalse(hasattr(self.config, 'add_amd_css'))
         self.config.include('pyramid_amdjs')
 
+        self.assertTrue(hasattr(self.config, 'add_amd_dir'))
         self.assertTrue(hasattr(self.config, 'add_amd_js'))
         self.assertTrue(hasattr(self.config, 'add_amd_css'))
 
@@ -124,6 +126,25 @@ class TestAmdInit(BaseTestCase):
         self.registry.settings['amd.enabled'] = True
         self.config.add_static_view('_tests', 'pyramid_amdjs:tests/dir/')
 
+    @mock.patch('pyramid_amdjs.amd.build_init')
+    def test_build_md5(self, m_binit):
+        from pyramid_amdjs.amd import build_md5
+
+        m_binit.return_value = '123'
+        h = build_md5(self.request, '_')
+        self.assertEqual('202cb962ac59075b964b07152d234b70', h)
+        self.assertTrue(m_binit.called)
+
+    @mock.patch('pyramid_amdjs.amd.build_init')
+    def test_build_md5_cached(self, m_binit):
+        from pyramid_amdjs.amd import build_md5, ID_AMD_MD5
+
+        self.registry[ID_AMD_MD5]['_'] = '123'
+
+        h = build_md5(self.request, '_')
+        self.assertEqual('123', h)
+        self.assertFalse(m_binit.called)
+
     def test_amd_init_no_spec(self):
         from pyramid_amdjs.amd import amd_init
 
@@ -159,6 +180,37 @@ class TestAmdInit(BaseTestCase):
                                   'path':'pyramid_amdjs:static/example.js'}}}
         resp = amd_init(self.request)
         self.assertIn('"pyramid": "/_amd_test/test?_v=123"', resp.text)
+
+    def test_amd_init_with_v(self):
+        from pyramid_amdjs.amd import JS_MOD
+        from pyramid_amdjs.amd import amd_init, ID_AMD_MODULE, ID_AMD_SPEC
+
+        self.request.params['_v'] = '123'
+        self.request.matchdict['specname'] = 'test'
+
+        self.registry[ID_AMD_SPEC] = \
+            {'test': {'pyramid': {'name':'test',
+                                  'md5': '123',
+                                  'path':'pyramid_amdjs:static/example.js'}}}
+
+        resp = amd_init(self.request)
+        self.assertEqual('max-age=31536000', resp.headers['Cache-Control'])
+        self.assertIn('"pyramid": "/_amd_test/test?_v=123"', resp.text)
+
+    def test_amd_init_from_file(self):
+        from pyramid_amdjs.amd import amd_init, RESOLVER, ID_AMD_SPEC
+
+        self.request.params['_v'] = '123'
+        self.request.matchdict['specname'] = 'test'
+
+        self.registry[ID_AMD_SPEC] = \
+            {'test': {'pyramid': {}},
+             'test-init': RESOLVER.resolve(
+                'pyramid_amdjs:tests/dir/test2.js').abspath()}
+
+        resp = amd_init(self.request)
+        self.assertIsInstance(resp, FileResponse)
+        self.assertEqual('max-age=31536000', resp.headers['Cache-Control'])
 
     def test_amd_init_with_spec_mustache(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -211,6 +263,19 @@ class TestInitAmdSpec(BaseTestCase):
             os.unlink(f)
 
         super(TestInitAmdSpec, self).tearDown()
+
+    def test_build_md5(self):
+        from pyramid_amdjs.amd import build_md5, ID_AMD_SPEC, RESOLVER
+
+        f = RESOLVER.resolve('pyramid_amdjs:tests/dir/test2.js').abspath()
+
+        reg = self.registry
+        reg.settings['amd.enabled'] = True
+        reg[ID_AMD_SPEC]['test'] = {'test-init': f}
+        reg[ID_AMD_SPEC]['test-init'] = f
+
+        h = build_md5(self.request, 'test')
+        self.assertEqual('123', h)
 
     def test_empty_spec(self):
         self._create_file("[test.js]\nmodules = lib1")
