@@ -9,6 +9,10 @@ CHANGES
 
 - Added `_v` query param that allow stong caching
 
+- curl.js 0.7.3
+
+- uglify.js 1.3.4
+
 
 0.2.1 (12-18-2012)
 ------------------

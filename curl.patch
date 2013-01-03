@@ -1,0 +1,41 @@
+diff --git a/src/curl.js b/src/curl.js
+index d6c1508..374d992 100644
+--- a/src/curl.js
++++ b/src/curl.js
+@@ -38,8 +38,6 @@
+ 		undef,
+ 		// local cache of resource definitions (lightweight promises)
+ 		cache = {},
+-		// local url cache
+-		urlCache = {},
+ 		// preload are files that must be loaded before any others
+ 		preload = false,
+ 		// net to catch anonymous define calls' arguments (non-IE browsers)
+@@ -368,7 +366,7 @@
+ 			// before resolving
+ 			def.resolve = function resolve (deps) {
+ 				when(isPreload || preload, function () {
+-					origResolve((cache[def.id] = urlCache[def.url] = execute(deps)));
++					origResolve((cache[def.id] = execute(deps)));
+ 				});
+ 			};
+ 
+@@ -971,16 +969,12 @@
+ 
+ 			if (mainId in cache) {
+ 				def = cache[mainId];
+-			}
+-			else if (pathInfo.url in urlCache) {
+-				def = cache[mainId] = urlCache[pathInfo.url];
+-			}
+-			else {
++			} else {
+ 				def = core.createResourceDef(pathInfo.config, mainId, isPreload);
+ 				// TODO: can this go inside createResourceDef?
+ 				// TODO: can we pass pathInfo.url to createResourceDef instead?
+ 				def.url = core.checkToAddJsExt(pathInfo.url, pathInfo.config);
+-				cache[mainId] = urlCache[pathInfo.url] = def;
++				cache[mainId] = def;
+ 				core.fetchResDef(def);
+ 			}
+ 

@@ -7,6 +7,9 @@ def includeme(config):
     config.add_amd_js(
         'jquery', 'pyramid_amdjs:static/lib/jquery-1.8.3.min.js',
         'JQuery Library')
+    config.add_amd_js(
+        'jquery18', 'pyramid_amdjs:static/lib/jquery-1.8.3.min.js',
+        'JQuery Library 1.8')
 
     # underscore
     config.add_amd_js(
