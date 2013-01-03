@@ -96,7 +96,7 @@ class TestBundleRoute(BaseTestCase):
 
         self.assertIn(
             ('test-bundle',
-             'http://example.com/_handlebars/test-bundle.js'),
+             'http://example.com/_handlebars/test-bundle.js?_v=4fd9f280e1e6f728354fd46056f3be4d'),
             list_bundles(self.request))
 
     def test_list_bundles_unset(self):
@@ -117,7 +117,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = '_'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js"', res.text)
+        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=4fd9f280e1e6f728354fd46056f3be4d"', res.text)
 
     def test_bundles_amd_spec(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -125,6 +125,7 @@ class TestBundleRoute(BaseTestCase):
         self.registry[ID_AMD_SPEC] = {
             'test': {'test-bundle':
                      {'name':'bundle',
+                      'md5': '123',
                       'path':'pyramid_amdjs:static/example.js'}}
         }
         self.config.add_mustache_bundle(
@@ -133,7 +134,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = 'test'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_amd_test/bundle"', res.text)
+        self.assertIn('"test-bundle":"/_amd_test/bundle?_v=123"', res.text)
 
     def test_build_bundle(self):
         from pyramid_amdjs.mustache import bundle_view

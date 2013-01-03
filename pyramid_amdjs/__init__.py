@@ -7,7 +7,9 @@ def includeme(cfg):
 
     # settings
     settings = cfg.get_settings()
+    settings['amd.debug'] = asbool(settings.get('amd.debug', 'f'))
     settings['amd.enabled'] = asbool(settings.get('amd.enabled', 't'))
+    settings['amd.app-url'] = settings.get('amd.app-url', '').strip()
     settings['amd.spec-dir'] = settings.get('amd.spec-dir', '').strip()
     settings['amd.tmpl-cache'] = settings.get('amd.tmpl-cache', '').strip()
     settings['amd.tmpl-langs'] = [
@@ -28,9 +30,23 @@ def includeme(cfg):
     cfg.add_request_method(amd.request_css_includes, 'include_css')
 
     # config directives
-    cfg.add_directive('add_amd_dir', amd.add_amd_dir)
     cfg.add_directive('add_amd_js', amd.add_js_module)
     cfg.add_directive('add_amd_css', amd.add_css_module)
+
+    if settings['amd.debug']:
+        from pyramid_amdjs import amddebug
+        settings['amd.debug.data'] = {
+            'paths': [], 'cache': {}, 'mods': {}}
+
+        cfg.registry[amd.ID_AMD_BUILD] = amddebug.build_init
+        cfg.registry[amd.ID_AMD_BUILD_MD5] = amddebug.build_md5
+        cfg.add_directive('add_amd_dir', amddebug.add_amd_dir)
+    else:
+        cfg.registry[amd.ID_AMD_BUILD] = amd.build_init
+        cfg.registry[amd.ID_AMD_BUILD_MD5] = amd.build_md5
+        cfg.add_directive('add_amd_dir', amd.add_amd_dir)
+
+    cfg.registry[amd.ID_AMD_MD5] = {}
 
     # amd init route
     cfg.add_route('pyramid-amd-init', '/_amd_{specname}.js')

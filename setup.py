@@ -2,9 +2,10 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version='0.2.1'
+version='0.3'
 
 install_requires = ['setuptools',
+                    'simplejson',
                     'pyramid >= 1.4',
 ]
 
@@ -14,9 +15,6 @@ if sys.version_info[:2] == (2, 6):
         'ordereddict',
         'unittest2'))
 
-if sys.version_info[:2] in ((2,6),(2,7)):
-    install_requires.extend(('simplejson',))
-
 tests_require = install_requires + ['nose', 'mock']
 
 def read(f):
@@ -25,7 +23,7 @@ def read(f):
 
 setup(name='pyramid_amdjs',
       version=version,
-      description=('JS/CSS management with curl.js'),
+      description=('Pyramid JS/CSS resource management with curl.js'),
       long_description='\n\n'.join((read('README.rst'), read('CHANGES.txt'))),
       classifiers=[
           "License :: OSI Approved :: MIT License",

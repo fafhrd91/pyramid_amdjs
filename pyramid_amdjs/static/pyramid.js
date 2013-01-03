@@ -123,10 +123,20 @@ define(
 
                     // All construction is actually done in the init method
                     if (this.__init__ && this.__init__.apply)
-                        this.__init__.apply(this, arguments)
+                        try {
+                            this.__init__.apply(this, arguments)
+                        } catch(e) {
+                            console.log('Excetion during first stage initialization: ', e)
+                            throw e
+                        }
 
                     if (this.init && this.init.apply)
-                        this.init.apply(this)
+                        try {
+                            this.init.apply(this)
+                        } catch(e) {
+                            console.log('Excetion during second stage initialization: ', e)
+                            throw e
+                        }
 
                     // run initializers
                     for (var i=0; i<this.__initializers__.length; i++) {
@@ -329,17 +339,27 @@ define(
         pyramid.View = pyramid.Object.extend({
             __name__: 'pyramid.View'
 
-            , __init__: function(parent, options) {
+            , __init__: function(parent, dom, options) {
                 this.__parent__ = parent
                 this.__uuid__ = pyramid.guid()
                 this.__destroyed__ = false
                 this.__views__ = new Array()
 
+                if (dom && !dom.jquery)
+                    options = dom
+
                 if (typeof(options) === 'undefined')
                     options = {}
 
+                if (dom && dom.jquery)
+                    options.dom = dom
+
                 if (options.container)
                     this.__container__ = options.container
+                else
+                    this.__container__ = $('body')
+
+                var container = this.__container__
 
                 if (options.id)
                     this.__id__ = options.id
@@ -349,11 +369,14 @@ define(
                     this.__id__ = this.__dom__.id
                 } else {
                     if (this.__id__)
-                        dom.append('<div id="'+this.__id__+
+                        container.append('<div id="'+this.__id__+
                                    '" data-uuid="'+this.__uuid__+'"></div>')
                     else
-                        dom.append('<div data-uuid="'+this.__uuid__+'"></div>')
-                    this.__dom__ = $('[data-uuid="'+this.__uuid__+'"]', dom)
+                        container.append(
+                            '<div data-uuid="'+this.__uuid__+'"></div>')
+
+                    this.__dom__ = $(
+                        '[data-uuid="'+this.__uuid__+'"]', container)
                 }
 
                 this.options = options
@@ -561,7 +584,7 @@ define(
         // handlebars dateTime formatters
         handlebars.registerHelper(
             'dateTime', function(text, format) {
-                if (typeof(text) === 'undefined')
+                if (text===null || typeof(text) === 'undefined')
                     text = this
 
                 text = String.trim(text)

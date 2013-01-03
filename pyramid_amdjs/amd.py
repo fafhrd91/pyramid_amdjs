@@ -1,4 +1,5 @@
 import os
+import hashlib
 import logging
 from pyramid.path import AssetResolver
 from pyramid.compat import configparser, text_type, string_types, text_
@@ -16,9 +17,15 @@ log = logging.getLogger('pyramid_amdjs')
 ID_AMD_SPEC = 'pyramid_amdjs:amd-spec'
 ID_AMD_SPEC_ = 'pyramid_amdsj:amd-spec_'
 ID_AMD_MODULE = 'pyramid_amdjs:amd-module'
+ID_AMD_BUILD = 'pyramid_amdjs:build-init'
+ID_AMD_MD5 = 'pyramid_amdjs:md5-init'
+ID_AMD_BUILD_MD5 = 'pyramid_amdjs:build-md5-init'
 
 JS_MOD = 1
 CSS_MOD = 2
+
+RESOLVER = AssetResolver()
+CURL_PATH = RESOLVER.resolve('pyramid_amdjs:static/lib/curl.js').abspath()
 
 
 def init_amd_spec(config, cache_max_age=None):
@@ -30,8 +37,7 @@ def init_amd_spec(config, cache_max_age=None):
     if not cfg['amd.spec-dir']:
         raise ConfigurationError("amd.spec-dir is required.")
 
-    resolver = AssetResolver()
-    directory = resolver.resolve(cfg['amd.spec-dir']).abspath()
+    directory = RESOLVER.resolve(cfg['amd.spec-dir']).abspath()
 
     specs = {}
     for spec, specfile in cfg['amd.spec']:
@@ -43,7 +49,7 @@ def init_amd_spec(config, cache_max_age=None):
     spec_mods = {}
 
     for spec, specfile in specs.items():
-        f = resolver.resolve(specfile).abspath()
+        f = RESOLVER.resolve(specfile).abspath()
 
         parser = configparser.SafeConfigParser()
         parser.read(f)
@@ -66,8 +72,14 @@ def init_amd_spec(config, cache_max_age=None):
                         item = {'name': section,
                                 'url': '%s/%s'%(base_url, section)}
                     else:
+                        md5 = hashlib.md5()
+                        fpath = os.path.join(directory, section)
+                        with open(fpath, 'rb') as f:
+                            md5.update(f.read())
+
                         item = {'name': section,
-                                'path': os.path.join(directory,section)}
+                                'md5': md5.hexdigest(),
+                                'path': fpath}
 
                 mods[section] = item
                 for mod in modules:
@@ -96,6 +108,13 @@ def add_js_module(cfg, name, path, description='', requires=()):
     intr['description'] = description
     intr['tp'] = JS_MOD
 
+    filepath = RESOLVER.resolve(path).abspath()
+    md5 = hashlib.md5()
+    with open(filepath, 'rb') as f:
+        md5.update(f.read())
+
+    intr['md5'] = md5.hexdigest()
+
     if isinstance(requires, str):
         requires = (requires,)
     intr['requires'] = requires
@@ -121,6 +140,12 @@ def add_css_module(cfg, name, path, description=''):
     intr['path'] = path
     intr['description'] = description
     intr['tp'] = CSS_MOD
+
+    filepath = RESOLVER.resolve(path).abspath()
+    md5 = hashlib.md5()
+    with open(filepath, 'rb') as f:
+        md5.update(f.read())
+    intr['md5'] = md5.hexdigest()
 
     storage = cfg.registry.setdefault(ID_AMD_MODULE, {})
     storage[name] = intr
@@ -168,19 +193,17 @@ def add_amd_dir(cfg, path):
 
     :param path: asset path
     """
-    resolver = AssetResolver()
-    directory = resolver.resolve(path).abspath()
+    directory = RESOLVER.resolve(path).abspath()
 
     mods = []
     for filename in os.listdir(directory):
         p = os.path.join(path, filename)
 
         if filename.endswith('.js'):
-            for name, deps in extract_mod(
-                    filename[:-3],
-                    text_(open(os.path.join(directory, filename),'r').read()),
-                    p):
-                mods.append((name, p, JS_MOD))
+            with open(os.path.join(directory, filename),'r') as f:
+                for name, deps in extract_mod(
+                        filename[:-3], text_(f.read()), p):
+                    mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
             mods.append((filename[:-4], p, CSS_MOD))
 
@@ -192,8 +215,12 @@ def add_amd_dir(cfg, path):
             add_css_module(cfg, name, p)
             log.info("Add css module: %s path:%s"%(name, p))
 
+    return directory
+
 
 AMD_INIT_TMPL = """
+%(curl)s
+
 var pyramid_amd_modules = {\n%(mods)s}
 
 if (typeof(AMDJS_APP_URL) !== 'undefined') {
@@ -216,18 +243,44 @@ def amd_spec(request):
     if name not in spec or 'path' not in spec[name]:
         return HTTPNotFound()
 
-    return FileResponse(
-        spec[name]['path'], request, request.registry.get(ID_AMD_SPEC_))
+    cache_max_age = 31536000 if request.params.get('_v') else None
+
+    return FileResponse(spec[name]['path'], request, cache_max_age)
 
 
-def build_init(request, specname):
+def build_md5(request, specname):
+    data = request.registry[ID_AMD_MD5]
+
+    h = data.get(specname)
+    if h is None:
+        cfg = request.registry.settings
+        specstorage = request.registry.get(ID_AMD_SPEC, {})
+        specdata = specstorage.get(specname)
+
+        initfile = '%s-init'%specname
+        if specdata and cfg['amd.enabled'] and initfile in specstorage:
+            with open(specstorage[initfile], 'r') as f:
+                line = f.readline()
+                h = line.split('||', 2)[1]
+        else:
+            initf = build_init(request, specname)
+
+            md5 = hashlib.md5()
+            md5.update(initf.encode('utf-8'))
+
+            h = request.registry[ID_AMD_MD5][specname] = md5.hexdigest()
+
+    return h
+
+
+def build_init(request, specname, extra=()):
     storage = request.registry.get(ID_AMD_MODULE)
 
     spec_data = request.registry.get(ID_AMD_SPEC, {}).get(specname)
     if spec_data is None and specname != '_':
         return None
 
-    js = []
+    js = list(extra)
     if spec_data is None:
         spec_data = {}
 
@@ -246,11 +299,14 @@ def build_init(request, specname):
                     if not url:
                         url = spec_cache[info['name']] = request.route_url(
                             'pyramid-amd-spec',
-                            specname=specname, name=info['name'])
+                            specname=specname, name=info['name'],
+                            _query={'_v': info['md5']})
                 else:
                     url = info['url']
             else:
                 url = '%s'%request.static_url(path)
+                if 'md5' in intr:
+                    url = '%s?_v=%s'%(url, intr['md5'])
 
             if url.startswith(app_url):
                 url = url[app_url_len:]
@@ -269,7 +325,8 @@ def build_init(request, specname):
                 if not url:
                     url = spec_cache[info['name']] = request.route_url(
                         'pyramid-amd-spec',
-                        specname=specname, name=info['name'])
+                        specname=specname, name=info['name'],
+                        _query={'_v': info['md5']})
             else:
                 url = info['url']
 
@@ -278,7 +335,9 @@ def build_init(request, specname):
 
         js.append('"%s":"%s"'%(name, url))
 
-    return text_type(AMD_INIT_TMPL%{'mods': ',\n'.join(sorted(js))})
+    with open(CURL_PATH, 'r') as f:
+        return text_type(AMD_INIT_TMPL%{
+            'curl': f.read(), 'mods': ',\n'.join(sorted(js))})
 
 
 @view_config(route_name='pyramid-amd-init')
@@ -287,28 +346,33 @@ def amd_init(request, **kw):
     specstorage = request.registry.get(ID_AMD_SPEC, {})
     specname = request.matchdict['specname']
     specdata = specstorage.get(specname)
+    cache_max_age = 31536000 if request.params.get('_v') else None
 
     initfile = '%s-init'%specname
     if specdata and cfg['amd.enabled'] and initfile in specstorage:
-        return FileResponse(
-            specstorage[initfile], request, request.registry.get(ID_AMD_SPEC_))
+        return FileResponse(specstorage[initfile], request, cache_max_age)
 
-    text = build_init(request, specname)
+    text = request.registry[ID_AMD_BUILD](request, specname)
     if text is None:
         return HTTPNotFound()
 
     response = request.response
     response.content_type = 'application/javascript'
     response.text = text
+
+    if cache_max_age:
+        response.cache_expires = cache_max_age
+
     return response
 
 
-def request_amd_init(request, spec='', bundles=(), debug=False):
+def request_amd_init(request, spec='', bundles=()):
+    reg = request.registry
     cfg = request.registry.settings
 
     c_tmpls = []
     if spec and cfg['amd.enabled']:
-        specstorage = request.registry.get(ID_AMD_SPEC, {})
+        specstorage = reg.get(ID_AMD_SPEC, {})
         specdata = specstorage.get(spec)
         if specdata is None:
             raise RuntimeError("Spec '%s' is not found."%spec)
@@ -316,20 +380,16 @@ def request_amd_init(request, spec='', bundles=(), debug=False):
         spec = '_'
         specdata = ()
 
-    if debug:
+    if cfg['amd.app-url']:
         c_tmpls.append(
-            '<script src="%s"> </script>'%
-            request.static_url('pyramid_amdjs:static/lib/curl-debug.js'))
-    else:
-        c_tmpls.append(
-            '<script src="%s"> </script>'%
-            request.static_url('pyramid_amdjs:static/lib/curl.js'))
-    c_tmpls.append(
-        '<script type="text/javascript">'
-        'AMDJS_APP_URL="%s";</script>'%(request.application_url,))
+            '<script type="text/javascript">'
+            'AMDJS_APP_URL="%s";</script>'%(cfg['amd.app-url'],))
+
     c_tmpls.append(
         '<script src="%s"> </script>'%(
-            request.route_url('pyramid-amd-init', specname=spec)))
+            request.route_url(
+                'pyramid-amd-init', specname=spec,
+                _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
 
     for name in (bundles if not isinstance(bundles, str) else (bundles,)):
         name = '%s.js'%name

@@ -1,6 +1,7 @@
 """ amdjs command """
 from __future__ import print_function
 import os
+import hashlib
 import argparse
 import textwrap
 import tempfile
@@ -52,7 +53,7 @@ class AmdjsCommand(object):
 
     def __init__(self, args):
         self.options = args
-        self.env = bootstrap(args.config)
+        self.env = bootstrap(args.config, options={'amd.debug': 'f'})
         self.registry = self.env['registry']
         self.request = self.env['request']
         self.resolver = AssetResolver()
@@ -173,6 +174,12 @@ class AmdjsCommand(object):
             # build init js
             text = build_init(self.request, spec)
             if text is not None:
+                md5 = hashlib.md5()
+                md5.update(text.encode('utf-8'))
+
+                text = "var __file_hash__ = '||%s||';\n%s"%(
+                    md5.hexdigest(), text)
+
                 initpath = os.path.join(cfg['amd.spec-dir'], 'init-%s.js'%spec)
                 with open(initpath, 'wb') as dest:
                     dest.write(text)

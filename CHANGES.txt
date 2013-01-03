@@ -2,6 +2,14 @@
 CHANGES
 =======
 
+0.3 (Unreleased)
+----------------
+
+- Added debug mode
+
+- Added `_v` query param that allow stong caching
+
+
 0.2.1 (12-18-2012)
 ------------------
 

@@ -1,4 +1,5 @@
 import os
+import hashlib
 import tempfile
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
@@ -178,7 +179,6 @@ def build_hb_bundle(name, intr, registry):
                     if _i18n:
                         i18n.update(dict((v, None) for v in _i18n))
 
-
             if node_path:
                 mustache = (
                     text_type('"%s":Handlebars.template(%s)')%(
@@ -220,9 +220,18 @@ def build_hb_bundle(name, intr, registry):
 
 
         i18n_tmpl = i18n_template%('i18n-%s'%name, json.dumps(i18n_data))
-        return template%(name, tmpl, name, i18n_tmpl)
+        res = template%(name, tmpl, name, i18n_tmpl)
     else:
-        return template%(name, tmpl, name, '')
+        res = template%(name, tmpl, name, '')
+
+    res = text_(res, 'utf-8')
+
+    md5 = hashlib.md5()
+    md5.update(res.encode('latin-1'))
+
+    intr['md5'] = md5.hexdigest()
+
+    return res
 
 
 @view_config(route_name='pyramid-mustache-bundle')
@@ -235,8 +244,7 @@ def bundle_view(request):
     name = str(name)
     response = request.response
     response.content_type = 'application/javascript'
-    response.text = text_(
-        build_hb_bundle(name, storage[name], request.registry), 'utf-8')
+    response.text = build_hb_bundle(name, storage[name], request.registry)
     return response
 
 
@@ -247,9 +255,12 @@ def list_bundles(request):
     if not storage:
         return res
 
-    for name in storage.keys():
-        res.append(
-            (name, request.route_url('pyramid-mustache-bundle', name=name)))
+    for name, intr in storage.items():
+        build_hb_bundle(name, intr, request.registry)
+
+        url = request.route_url(
+            'pyramid-mustache-bundle', name=name, _query={'_v': intr['md5']})
+        res.append((name, url))
 
     return res
 
