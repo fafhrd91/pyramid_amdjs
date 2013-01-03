@@ -5,11 +5,11 @@ import hashlib
 import argparse
 import textwrap
 import tempfile
-from pyramid.compat import configparser, bytes_, text_type
+from pyramid.compat import configparser, bytes_
 from pyramid.path import AssetResolver
 from pyramid.paster import bootstrap
 
-from .amd import JS_MOD, CSS_MOD, ID_AMD_MODULE, ID_AMD_SPEC, build_init
+from .amd import ID_AMD_MODULE, ID_AMD_SPEC, build_init
 from .compat import OrderedDict, NODE_PATH, check_output
 from .mustache import ID_BUNDLE, build_hb_bundle
 

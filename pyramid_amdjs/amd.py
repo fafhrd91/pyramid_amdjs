@@ -9,7 +9,6 @@ from pyramid.response import FileResponse
 from pyramid.exceptions import ConfigurationError
 from pyramid.httpexceptions import HTTPNotFound
 
-from .compat import json
 from .mustache import list_bundles
 
 log = logging.getLogger('pyramid_amdjs')

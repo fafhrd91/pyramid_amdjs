@@ -5,7 +5,6 @@ from setuptools import setup, find_packages
 version='0.3'
 
 install_requires = ['setuptools',
-                    'simplejson',
                     'pyramid >= 1.4',
 ]
 
@@ -14,6 +13,9 @@ if sys.version_info[:2] == (2, 6):
         'argparse',
         'ordereddict',
         'unittest2'))
+
+if sys.version_info[:2] in ((2,6),(2,7),(3,3)):
+    install_requires.extend(('simplejson',))
 
 tests_require = install_requires + ['nose', 'mock']
 
