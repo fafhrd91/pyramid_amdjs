@@ -1,8 +1,8 @@
 AmdJS for Pyramid
 =================
 
-.. image :: https://secure.travis-ci.org/fafhrd91/pyramid_amdjs.png 
-  :target:  https://secure.travis-ci.org/fafhrd91/pyramid_amdjs
+.. image :: https://travis-ci.org/fafhrd91/pyramid_amdjs.png
+  :target:  https://travis-ci.org/fafhrd91/pyramid_amdjs
 
 `pyramid_amdjs` allows to manage js and css resources as amdjs modules 
 
