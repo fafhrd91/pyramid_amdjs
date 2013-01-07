@@ -2,6 +2,14 @@
 CHANGES
 =======
 
+0.3.1 (01-07-2012)
+------------------
+
+- Show amd module define exception (curljs)
+
+- Added helper pform js mod
+
+
 0.3 (01-03-2012)
 ----------------
 

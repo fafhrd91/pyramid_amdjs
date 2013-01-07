@@ -31,6 +31,9 @@ define(
             }
 
             , get_options: function(el, prefix, opts) {
+                if (el.jquery)
+                    el = el.get(0)
+
                 prefix = prefix || 'data-'
                 var len = prefix.length
                 var options = opts || {}
@@ -301,6 +304,7 @@ define(
 
             if (dom) {
                 dom.undelegate('[data-action]', 'click')
+                dom.undelegate('[event-click]', 'click')
                 dom.delegate('[data-action]', 'click', this, this.__dispatch__)
                 dom.delegate('[event-click]', 'click', this, this.__dispatch__)
             }

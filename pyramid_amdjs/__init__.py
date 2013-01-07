@@ -66,6 +66,11 @@ def includeme(cfg):
     cfg.add_route(
         'pyramid-mustache-bundle', '/_handlebars/{name}.js')
 
+    cfg.add_directive(
+        'add_hb_bundle', register_mustache_bundle)
+    cfg.add_route(
+        'pyramid-hb-bundle', '/_handlebars/{name}.js')
+
     # scan
     cfg.scan('pyramid_amdjs')
     cfg.include('pyramid_amdjs.static')
