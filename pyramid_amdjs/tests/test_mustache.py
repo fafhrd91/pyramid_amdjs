@@ -105,7 +105,7 @@ class TestBundleRoute(BaseTestCase):
 
         self.assertIn(
             ('test-bundle',
-             'http://example.com/_handlebars/test-bundle.js?_v=4fd9f280e1e6f728354fd46056f3be4d'),
+             'http://example.com/_handlebars/test-bundle.js?_v=4e09fb715fbd5d0b6931f88bf5f58ed9'),
             list_bundles(self.request))
 
     def test_list_bundles_unset(self):
@@ -126,7 +126,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = '_'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=4fd9f280e1e6f728354fd46056f3be4d"', res.text)
+        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=4e09fb715fbd5d0b6931f88bf5f58ed9"', res.text)
 
     def test_bundles_amd_spec(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC

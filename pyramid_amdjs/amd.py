@@ -198,9 +198,8 @@ def add_amd_dir(cfg, path):
         p = os.path.join(path, filename)
 
         if filename.endswith('.js'):
-            with open(os.path.join(directory, filename),'r') as f:
-                for name, deps in extract_mod(
-                        filename[:-3], text_(f.read()), p):
+            with open(os.path.join(directory, filename), 'rb') as f:
+                for name, deps in extract_mod(filename[:-3],text_(f.read()),p):
                     mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
             mods.append((filename[:-4], p, CSS_MOD))

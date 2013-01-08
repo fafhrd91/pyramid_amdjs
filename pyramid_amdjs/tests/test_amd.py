@@ -182,8 +182,7 @@ class TestAmdInit(BaseTestCase):
         self.assertIn('"pyramid": "/_amd_test/test?_v=123"', resp.text)
 
     def test_amd_init_with_v(self):
-        from pyramid_amdjs.amd import JS_MOD
-        from pyramid_amdjs.amd import amd_init, ID_AMD_MODULE, ID_AMD_SPEC
+        from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
 
         self.request.params['_v'] = '123'
         self.request.matchdict['specname'] = 'test'

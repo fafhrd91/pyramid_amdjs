@@ -1,8 +1,8 @@
 import os
 import logging
 import hashlib
-from pyramid.compat import text_
 from pyramid.path import AssetResolver
+from pyramid.compat import text_
 
 from pyramid_amdjs import amd
 
@@ -57,7 +57,7 @@ def load_dir(registry, dirname, directory):
         p = os.path.join(dirname, filename)
 
         if filename.endswith('.js'):
-            with open(os.path.join(directory, filename),'r') as f:
+            with open(os.path.join(directory, filename), 'rb') as f:
                 for name, deps in amd.extract_mod(
                         filename[:-3], text_(f.read()), p):
                     mods.append((name, p, amd.JS_MOD, filepath))

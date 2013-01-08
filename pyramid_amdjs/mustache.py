@@ -83,15 +83,15 @@ def compile_template(name, path, node_path, cache_dir):
     if os.path.exists(cname) and \
            (os.path.getmtime(tname) <= os.path.getmtime(cname)):
         with open(cname, 'rb') as f:
-            tmpl = text_(f.read(), 'utf-8')
+            tmpl = text_(f.read())
 
         if os.path.exists(iname):
             with open(iname, 'rb') as f:
-                i18n.extend(json.loads(text_(f.read(),'utf-8')))
+                i18n.extend(json.loads(text_(f.read())))
     else:
         text = []
         with open(tname, 'rb') as f:
-            data = text_(f.read(), 'utf-8')
+            data = text_(f.read())
 
             # i18n
             pos = 0

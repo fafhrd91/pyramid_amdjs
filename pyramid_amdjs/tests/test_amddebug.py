@@ -1,9 +1,8 @@
 """ Tests for pyramid_amdjs.amddebug """
 import mock
-
-from base import BaseTestCase, TestCase
-
 from pyramid_amdjs import amd, amddebug
+
+from base import BaseTestCase
 
 
 class TestAmdDirective(BaseTestCase):

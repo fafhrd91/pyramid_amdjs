@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.3.2 (01-08-2012)
+------------------
+
+- Fixed reading resource files with non ascii content
+
+
 0.3.1 (01-07-2012)
 ------------------
 
