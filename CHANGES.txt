@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.4 (Unreleased)
+----------------
+
+- Static resource management
+
+
 0.3.2 (01-08-2012)
 ------------------
 

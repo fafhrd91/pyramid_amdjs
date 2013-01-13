@@ -2,8 +2,15 @@
 
 
 def includeme(cfg):
-    from pyramid_amdjs import amd
     from pyramid.settings import asbool, aslist
+    from pyramid.interfaces import IStaticURLInfo
+    from pyramid.compat import urlparse
+
+    from pyramid_amdjs import amd
+    from pyramid_amdjs.pstatic import StaticURLInfo
+
+    # static
+    cfg.registry.registerUtility(StaticURLInfo(), IStaticURLInfo)
 
     # settings
     settings = cfg.get_settings()
@@ -15,6 +22,14 @@ def includeme(cfg):
     settings['amd.tmpl-langs'] = [
         s.strip() for s in aslist(settings.get('amd.tmpl-langs', ''))]
     settings['amd.node'] = settings.get('amd.node', '').strip()
+
+    settings['static.url'] = settings.get('static.url', '').strip()
+    settings['static.rewrite'] = asbool(settings.get('static.rewrite', 'f'))
+    if not urlparse.urlparse(settings['static.url'])[0]:
+        settings['static.rewrite'] = False
+    else:
+        if not settings['static.url'].endswith('/'):
+            settings['static.url'] = '%s/'%settings['static.url']
 
     # spec settings
     specs = []
@@ -55,7 +70,7 @@ def includeme(cfg):
     # amd bundle route
     cfg.add_route('pyramid-amd-spec', '/_amd_{specname}/{name}')
 
-    # ptah static assets
+    # static assets
     cfg.add_static_view('_amdjs/static', 'pyramid_amdjs:static/')
 
     # mustache bundle

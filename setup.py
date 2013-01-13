@@ -2,7 +2,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version='0.3.2'
+version='0.4'
 
 install_requires = ['setuptools',
                     'pyramid >= 1.4',
@@ -52,6 +52,7 @@ setup(name='pyramid_amdjs',
       entry_points = {
           'console_scripts': [
               'amdjs = pyramid_amdjs.script:main',
+              'pstatic = pyramid_amdjs.pstatic:main',
           ],
           'babel.extractors': [
               'mustache = pyramid_amdjs.mustache:extract_i18n_mustache',

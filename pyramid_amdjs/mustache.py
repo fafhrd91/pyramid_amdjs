@@ -1,4 +1,5 @@
 import os
+import shutil
 import hashlib
 import tempfile
 from pyramid.i18n import get_localizer
@@ -68,8 +69,7 @@ def compile_template(name, path, node_path, cache_dir):
     # copy to temp dir
     if not os.path.exists(tname) or \
        (os.path.getmtime(path) > os.path.getmtime(tname)):
-        with open(tname, 'wb') as f:
-            f.write(open(path, 'rb').read())
+        shutil.copyfile(path, tname)
 
     i18n = []
 

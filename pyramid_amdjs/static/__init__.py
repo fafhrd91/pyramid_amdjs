@@ -53,5 +53,5 @@ def includeme(config):
 
     # simple bootstrap modal
     config.add_amd_js(
-        'pform', 'pyramid_amdjs:static/form.js',
-        'pform', ('handlebars', 'pyramid', 'bootstrap'))
+        'pyramid:form', 'pyramid_amdjs:static/form.js',
+        'Pyramid form', ('handlebars', 'pyramid', 'bootstrap'))

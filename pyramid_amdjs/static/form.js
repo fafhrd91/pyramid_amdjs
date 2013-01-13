@@ -1,5 +1,5 @@
 define (
-    'pform', ['jquery', 'pyramid', 'bootstrap'],
+    'pyramid:form', ['jquery', 'pyramid', 'bootstrap'],
 
     function($, pyramid) {
         "use strict";

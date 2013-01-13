@@ -100,7 +100,8 @@ def build_init(request, specname):
     js = []
     for name, info in data['mods'].items():
         url = '%s'%request.static_url(info['fname'], _query={'_v': info['md5']})
-        url = url[app_url_len:]
+        if url.startswith(app_url):
+            url = url[app_url_len:]
 
         if info['tp'] == amd.CSS_MOD:
             js.append('"%s.css": "%s"'%(name, url))
