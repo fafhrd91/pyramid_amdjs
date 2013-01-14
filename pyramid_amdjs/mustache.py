@@ -119,7 +119,7 @@ def compile_template(name, path, node_path, cache_dir):
         if node_path:
             tmpl = check_output((node_path, HB, '-s', tname))
             if tmpl is None:
-                tmpl = ''
+                tmpl = b''
                 log.error('Compilation is failed: %s'%path)
 
         with open(cname, 'wb') as f:
