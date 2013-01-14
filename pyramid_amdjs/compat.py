@@ -7,7 +7,7 @@ def check_output(*popenargs, **kwargs):
     output, unused_err = process.communicate()
     retcode = process.poll()
     if retcode: # pragma: nocover
-        return ''
+        return None
     return output
 
 try:

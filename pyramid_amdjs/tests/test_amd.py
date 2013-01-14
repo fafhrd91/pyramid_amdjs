@@ -325,7 +325,7 @@ class TestInitAmdSpec(BaseTestCase):
         cfg['amd.spec'] = [('test',fn)]
         cfg['amd.spec-dir'] = '/test'
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC

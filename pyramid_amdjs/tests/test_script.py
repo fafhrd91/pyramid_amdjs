@@ -57,7 +57,7 @@ class TestAmdCommand(BaseTestCase):
 
         self.config.add_amd_js(
             'test', 'pyramid_amdjs:tests/dir/test.js', 'Test module')
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'mustache-test', 'pyramid_amdjs:tests/dir/', 'Mustache bundle')
 
         cfg = self.registry.settings

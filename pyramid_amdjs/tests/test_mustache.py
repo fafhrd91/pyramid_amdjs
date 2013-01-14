@@ -14,10 +14,10 @@ class TestBundleDirective(BaseTestCase):
     _include = False
 
     def test_amd_directive(self):
-        self.assertFalse(hasattr(self.config, 'add_mustache_bundle'))
+        self.assertFalse(hasattr(self.config, 'add_handlebars_bundle'))
         self.config.include('pyramid_amdjs')
 
-        self.assertTrue(hasattr(self.config, 'add_mustache_bundle'))
+        self.assertTrue(hasattr(self.config, 'add_handlebars_bundle'))
 
     def test_handlebars_mod(self):
         self.config.include('pyramid_amdjs')
@@ -36,7 +36,7 @@ class TestBundleReg(BaseTestCase):
     def test_bundle_registration(self):
         from pyramid_amdjs.mustache import ID_BUNDLE
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/', i18n_domain='pyramid')
         self.config.commit()
 
@@ -50,24 +50,24 @@ class TestBundleReg(BaseTestCase):
     def test_bundle_unknown(self):
         self.assertRaises(
             ConfigurationError,
-            self.config.add_mustache_bundle,
+            self.config.add_handlebars_bundle,
             'test-bundle', 'pyramid_amdjs:tests/unknown/')
 
     def test_bundle_empty_path(self):
         self.assertRaises(
             ConfigurationError,
-            self.config.add_mustache_bundle, 'test-bundle')
+            self.config.add_handlebars_bundle, 'test-bundle')
 
     def test_bundle_not_dir(self):
         self.assertRaises(
             ConfigurationError,
-            self.config.add_mustache_bundle,
+            self.config.add_handlebars_bundle,
             'test-bundle', 'pyramid_amdjs:tests/bundle/cat1/form.mustache')
 
     def test_bundle_conflict(self):
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         self.assertRaises(
@@ -87,7 +87,7 @@ class TestBundleRoute(BaseTestCase):
     def test_route(self):
         from pyramid_amdjs.mustache import bundle_view
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
         self.request.matchdict['name'] = 'test-bundle'
 
@@ -97,10 +97,23 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             '"cat2":new pyramid.Templates("cat2",{"form2"', res.text)
 
+    @mock.patch('pyramid_amdjs.mustache.log')
+    def test_route_err_in_template(self, m_log):
+        from pyramid_amdjs.mustache import bundle_view
+
+        self.config.add_handlebars_bundle(
+            'test-bundle', 'pyramid_amdjs:tests/bundle3/')
+        self.request.matchdict['name'] = 'test-bundle'
+
+        bundle_view(self.request)
+        arg = m_log.error.call_args[0][0]
+        self.assertTrue(arg.startswith('Compilation is failed'))
+        self.assertTrue(arg.endswith('tests/bundle3/form.mustache'))
+
     def test_list_bundles(self):
         from pyramid_amdjs.mustache import list_bundles
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         self.assertIn(
@@ -120,7 +133,7 @@ class TestBundleRoute(BaseTestCase):
     def test_bundles_amd(self):
         from pyramid_amdjs.amd import amd_init
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         self.request.matchdict['specname'] = '_'
@@ -137,7 +150,7 @@ class TestBundleRoute(BaseTestCase):
                       'md5': '123',
                       'path':'pyramid_amdjs:static/example.js'}}
         }
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         self.request.matchdict['specname'] = 'test'
@@ -148,7 +161,7 @@ class TestBundleRoute(BaseTestCase):
     def test_build_bundle(self):
         from pyramid_amdjs.mustache import bundle_view
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
         self.request.matchdict['name'] = 'test-bundle'
 
@@ -160,7 +173,7 @@ class TestBundleRoute(BaseTestCase):
     def test_build_bundle_no_node(self, m_comp):
         from pyramid_amdjs.mustache import bundle_view
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
         self.request.matchdict['name'] = 'test-bundle'
 
@@ -177,7 +190,7 @@ class TestBundleRoute(BaseTestCase):
         cfg = self.registry.settings
         cfg['amd.tmpl-langs'] = ['en','pt_BR']
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle2/',
             i18n_domain='pyramid')
         self.request.matchdict['name'] = 'test-bundle'
@@ -206,7 +219,7 @@ class TestBundleRoute(BaseTestCase):
         cfg = self.registry.settings
         cfg['amd.tmpl-langs'] = ['en','pt_BR']
 
-        self.config.add_mustache_bundle(
+        self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle2/',
             i18n_domain='pyramid')
         self.request.matchdict['name'] = 'test-bundle'

@@ -1,6 +1,7 @@
 import os
 import shutil
 import hashlib
+import logging
 import tempfile
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
@@ -13,6 +14,7 @@ from pyramid.exceptions import ConfigurationError
 from . import compat
 from .compat import json, check_output
 
+log = logging.getLogger('pyramid_amdjs')
 
 ID_BUNDLE = 'pyramid_amdjs:mustache'
 ID_AMD_MODULE = 'pyramid_amdjs:amd-module'
@@ -23,8 +25,8 @@ HB = AssetResolver().resolve(
 ext_mustache = ('.mustache', '.hb')
 
 
-def register_mustache_bundle(cfg, name, path='',description='',i18n_domain=''):
-    """ Register mustache bundle;
+def register_handlebars_bundle(cfg, name,path='',description='',i18n_domain=''):
+    """ Register handlebars bundle;
 
     :param name: module name
     :param path: asset path
@@ -116,6 +118,9 @@ def compile_template(name, path, node_path, cache_dir):
         # compile
         if node_path:
             tmpl = check_output((node_path, HB, '-s', tname))
+            if tmpl is None:
+                tmpl = ''
+                log.error('Compilation is failed: %s'%path)
 
         with open(cname, 'wb') as f:
             f.write(tmpl)
@@ -234,7 +239,7 @@ def build_hb_bundle(name, intr, registry):
     return res
 
 
-@view_config(route_name='pyramid-mustache-bundle')
+@view_config(route_name='pyramid-hb-bundle')
 def bundle_view(request):
     name = request.matchdict['name']
     storage = request.registry.get(ID_BUNDLE)
@@ -259,7 +264,7 @@ def list_bundles(request):
         build_hb_bundle(name, intr, request.registry)
 
         url = request.route_url(
-            'pyramid-mustache-bundle', name=name, _query={'_v': intr['md5']})
+            'pyramid-hb-bundle', name=name, _query={'_v': intr['md5']})
         res.append((name, url))
 
     return res

@@ -73,18 +73,18 @@ def includeme(cfg):
     # static assets
     cfg.add_static_view('_amdjs/static', 'pyramid_amdjs:static/')
 
-    # mustache bundle
-    from .mustache import register_mustache_bundle
+    # handlebars bundle
+    from .mustache import register_handlebars_bundle
 
     cfg.add_directive(
-        'add_mustache_bundle', register_mustache_bundle)
-    cfg.add_route(
-        'pyramid-mustache-bundle', '/_handlebars/{name}.js')
-
-    cfg.add_directive(
-        'add_hb_bundle', register_mustache_bundle)
+        'add_handlebars_bundle', register_handlebars_bundle)
     cfg.add_route(
         'pyramid-hb-bundle', '/_handlebars/{name}.js')
+
+    cfg.add_directive(
+        'add_hb_bundle', register_handlebars_bundle)
+    cfg.add_directive(
+        'add_mustache_bundle', register_handlebars_bundle)
 
     # scan
     cfg.scan('pyramid_amdjs')
