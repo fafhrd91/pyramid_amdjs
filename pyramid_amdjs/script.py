@@ -215,7 +215,7 @@ class AmdjsCommand(object):
                     intr = storage.get(module)
                     if not intr:
                         print ("Can't find module '%s'"%module)
-                        return
+                        continue
 
                     processed.append(module)
                     js.append((module, intr['path'],

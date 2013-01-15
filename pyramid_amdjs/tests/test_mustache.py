@@ -156,7 +156,8 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = 'test'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_amd_test/bundle?_v=123"', res.text)
+        self.assertIn(
+            '"test-bundle":"/_amdjs/static/example.js?_v=123"', res.text)
 
     def test_build_bundle(self):
         from pyramid_amdjs.mustache import bundle_view

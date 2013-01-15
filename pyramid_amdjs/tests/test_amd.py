@@ -86,38 +86,6 @@ class TestAmd(BaseTestCase):
                          'pyramid_amdjs:tests/dir/test.js')
 
 
-class TestAmdSpec(BaseTestCase):
-
-    def test_unknown_spec(self):
-        from pyramid_amdjs.amd import amd_spec
-
-        self.request.matchdict['name'] = 'test.js'
-        self.request.matchdict['specname'] = 'test'
-
-        self.assertIsInstance(amd_spec(self.request), HTTPNotFound)
-
-    def test_spec_without_path(self):
-        from pyramid_amdjs.amd import amd_spec, ID_AMD_SPEC
-
-        self.request.matchdict['name'] = 'test.js'
-        self.request.matchdict['specname'] = 'test'
-
-        self.registry[ID_AMD_SPEC] = {'test': {'test.js': {'url':'http://...'}}}
-        self.assertIsInstance(amd_spec(self.request), HTTPNotFound)
-
-    def test_spec(self):
-        from pyramid_amdjs.amd import amd_spec, ID_AMD_SPEC
-
-        self.request.matchdict['name'] = 'test.js'
-        self.request.matchdict['specname'] = 'test'
-
-        resolver = AssetResolver()
-        path = resolver.resolve('pyramid_amdjs:tests/dir/test.js').abspath()
-
-        self.registry[ID_AMD_SPEC] = {'test': {'test.js': {'path':path}}}
-        self.assertIsInstance(amd_spec(self.request), FileResponse)
-
-
 class TestAmdInit(BaseTestCase):
 
     def setUp(self):
@@ -156,31 +124,6 @@ class TestAmdInit(BaseTestCase):
         resp = amd_init(self.request)
         self.assertIsInstance(resp, HTTPNotFound)
 
-    def test_amd_init_with_spec_url(self):
-        from pyramid_amdjs.amd import JS_MOD
-        from pyramid_amdjs.amd import amd_init, ID_AMD_MODULE, ID_AMD_SPEC
-
-        self.registry[ID_AMD_MODULE] = {
-            'pyramid': {'path':'pyramid_amdjs:static/pyramid_amdjs.js',
-                        'tp': JS_MOD}}
-        self.registry[ID_AMD_SPEC] = \
-            {'test': {'pyramid': {'url': 'http://test.com/example.js'}},
-             'test-init': ''}
-
-        self.registry.settings['amd.enabled'] = False
-
-        self.request.matchdict['specname'] = 'test'
-
-        resp = amd_init(self.request)
-        self.assertEqual(resp.status, '200 OK')
-
-        self.registry[ID_AMD_SPEC] = \
-            {'test': {'pyramid': {'name':'test',
-                                  'md5': '123',
-                                  'path':'pyramid_amdjs:static/example.js'}}}
-        resp = amd_init(self.request)
-        self.assertIn('"pyramid": "/_amd_test/test?_v=123"', resp.text)
-
     def test_amd_init_with_v(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
 
@@ -194,7 +137,8 @@ class TestAmdInit(BaseTestCase):
 
         resp = amd_init(self.request)
         self.assertEqual('max-age=31536000', resp.headers['Cache-Control'])
-        self.assertIn('"pyramid": "/_amd_test/test?_v=123"', resp.text)
+        self.assertIn(
+            '"pyramid": "/_amdjs/static/example.js?_v=123"', resp.text)
 
     def test_amd_init_from_file(self):
         from pyramid_amdjs.amd import amd_init, RESOLVER, ID_AMD_SPEC
@@ -223,7 +167,8 @@ class TestAmdInit(BaseTestCase):
                       'path':'pyramid_amdjs:static/example.js'}}
         }
         resp = amd_init(self.request)
-        self.assertIn('"underscore": "/_amd_test/test?_v=123"', resp.text)
+        self.assertIn(
+            '"underscore": "/_amdjs/static/example.js?_v=123"', resp.text)
 
     def test_amd_mod_paths(self):
         from pyramid_amdjs.amd import amd_init
@@ -316,31 +261,6 @@ class TestInitAmdSpec(BaseTestCase):
         self.assertTrue(storage['']['test.js']['path'].endswith('/test.js'))
         self.assertIn('test', storage)
 
-    def test_bundle_with_url(self):
-        fn = self._create_file(
-            "[init]\nbase=http://example2.com\n\n[test.js]\n"
-            "modules = lib1\n  test-bundle")
-
-        cfg = self.registry.settings
-        cfg['amd.spec'] = [('test',fn)]
-        cfg['amd.spec-dir'] = '/test'
-
-        self.config.add_handlebars_bundle(
-            'test-bundle', 'pyramid_amdjs:tests/bundle/')
-
-        from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC
-        init_amd_spec(self.config)
-
-        storage = self.registry[ID_AMD_SPEC]
-        self.assertIn('url', storage['test']['test.js'])
-        self.assertEqual(storage['test']['test.js']['url'],
-                         'http://example2.com/test.js')
-
-        from pyramid_amdjs.amd import build_init
-        self.assertIn(
-            '"test-bundle":"http://example2.com/test.js"',
-            build_init(self.request, 'test'))
-
     text1 = """
 [test.js]
 modules = lib1
@@ -359,11 +279,30 @@ modules = lib2
         from pyramid_amdjs.amd import init_amd_spec
         self.assertRaises(ConfigurationError, init_amd_spec, self.config)
 
+    def test_register_static_view_for_specs(self):
+        from pyramid_amdjs.amd import init_amd_spec, RESOLVER
+
+        d = RESOLVER.resolve('pyramid_amdjs:tests/dir/').abspath()
+
+        cfg = self.registry.settings
+        cfg['amd.spec'] = [('test', 'test2.js')]
+        cfg['amd.spec-dir'] = d
+
+        m_asv = self.config.add_static_view = mock.Mock() 
+
+        init_amd_spec(self.config)
+        self.assertTrue(m_asv.called)
+
+        name, path = m_asv.call_args[0]
+        self.assertEqual('_amdjs/bundles/', name)
+        self.assertTrue(path.endswith('pyramid_amdjs/tests/dir'))
+
 
 class TestSpecSettings(TestCase):
 
     def test_spec_settings(self):
-        config = Configurator(settings={'amd.spec.main': '/test',
+        config = Configurator(settings={'amd.spec-dir': './',
+                                        'amd.spec.main': '/test',
                                         'amd.spec.second': '/test1'})
 
         from pyramid_amdjs import includeme
@@ -444,20 +383,32 @@ class TestRequestRenderers(BaseTestCase):
             '<script src="http://example.com/_amd__.js?_v=123"> </script>', text)
 
     def test_render_amd_includes_spec(self):
-        from pyramid_amdjs.amd import ID_AMD_SPEC
+        from pyramid_amdjs.amd import init_amd_spec, ID_AMD_SPEC, RESOLVER
 
         self.cfg['amd.enabled'] = True
+        self.cfg['amd.spec-dir'] = RESOLVER.resolve(
+                'pyramid_amdjs:tests/dir/').abspath()
+        self.cfg['amd.spec'] = [('test', 'test.js')]
+        init_amd_spec(self.config)
 
-        self.registry[ID_AMD_SPEC] = {'test':
-                                      {'test.js': {'path':'/test/test.js'}}}
+        self.registry[ID_AMD_SPEC] = {
+            'test': {'test.js': {'path':'/test/test.js'}},        
+            'test-init': RESOLVER.resolve(
+                'pyramid_amdjs:tests/dir/test2.js').abspath()}
 
         text = self.request.init_amd('test').strip()
         self.assertIn(
-            '<script src="http://example.com/_amd_test.js?_v=123"> </script>', text)
+            '<script src="http://example.com/_amdjs/bundles/test2.js?_v=123"> </script>', 
+            text)
+
+        m_static = self.request.static_url = mock.Mock()
+        m_static.return_value = 'http://example.com/_amd_test/test.js'
 
         text = self.request.init_amd('test', 'test').strip()
         self.assertIn(
-            '<script src="http://example.com/_amd_test.js?_v=123"> </script>\n<script src="http://example.com/_amd_test/test.js"></script>', text)
+            '<script src="http://example.com/_amd_test/test.js"> </script>\n'
+            '<script src="http://example.com/_amd_test/test.js"></script>', 
+            text)
 
 
 class TestExtractMod(TestCase):

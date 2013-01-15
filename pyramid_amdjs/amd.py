@@ -37,6 +37,9 @@ def init_amd_spec(config, cache_max_age=None):
 
     directory = RESOLVER.resolve(cfg['amd.spec-dir']).abspath()
 
+    # register static view
+    config.add_static_view('_amdjs/bundles/', directory)
+
     specs = {}
     for spec, specfile in cfg['amd.spec']:
         if spec in specs:
@@ -53,11 +56,6 @@ def init_amd_spec(config, cache_max_age=None):
         parser.read(f)
 
         mods = {}
-        if parser.has_option('init', 'base'):
-            base_url = parser.get('init', 'base')
-        else:
-            base_url = ''
-
         for section in parser.sections():
             items = dict(parser.items(section))
 
@@ -66,18 +64,14 @@ def init_amd_spec(config, cache_max_age=None):
                            [s.strip() for s in items.get('modules', '').split()]
                            if not s.startswith('#')]
                 if modules:
-                    if base_url:
-                        item = {'name': section,
-                                'url': '%s/%s'%(base_url, section)}
-                    else:
-                        md5 = hashlib.md5()
-                        fpath = os.path.join(directory, section)
-                        with open(fpath, 'rb') as f:
-                            md5.update(f.read())
+                    md5 = hashlib.md5()
+                    fpath = os.path.join(directory, section)
+                    with open(fpath, 'rb') as f:
+                        md5.update(f.read())
 
-                        item = {'name': section,
-                                'md5': md5.hexdigest(),
-                                'path': fpath}
+                    item = {'name': section,
+                            'md5': md5.hexdigest(),
+                            'path': fpath}
 
                 mods[section] = item
                 for mod in modules:
@@ -231,19 +225,6 @@ if (typeof(AMDJS_APP_URL) !== 'undefined') {
 curl({dontAddFileExt:'.', paths: pyramid_amd_modules})
 """
 
-@view_config(route_name='pyramid-amd-spec')
-def amd_spec(request):
-    name = request.matchdict['name']
-    specname = request.matchdict['specname']
-
-    spec = request.registry[ID_AMD_SPEC].get(specname, ())
-    if name not in spec or 'path' not in spec[name]:
-        return HTTPNotFound()
-
-    cache_max_age = 31536000 if request.params.get('_v') else None
-
-    return FileResponse(spec[name]['path'], request, cache_max_age)
-
 
 def build_md5(request, specname):
     data = request.registry[ID_AMD_MD5]
@@ -291,15 +272,8 @@ def build_init(request, specname, extra=()):
             path = intr['path']
             info = spec_data.get(name)
             if info:
-                if 'path' in info:
-                    url = spec_cache.get(info['name'])
-                    if not url:
-                        url = spec_cache[info['name']] = request.route_url(
-                            'pyramid-amd-spec',
-                            specname=specname, name=info['name'],
-                            _query={'_v': info['md5']})
-                else:
-                    url = info['url']
+                url = request.static_url(
+                    info['path'], _query={'_v': info['md5']})
             else:
                 url = '%s'%request.static_url(path)
                 if 'md5' in intr:
@@ -317,15 +291,7 @@ def build_init(request, specname, extra=()):
     for name, url in list_bundles(request):
         info = spec_data.get(name)
         if info:
-            if 'path' in info:
-                url = spec_cache.get(info['name'])
-                if not url:
-                    url = spec_cache[info['name']] = request.route_url(
-                        'pyramid-amd-spec',
-                        specname=specname, name=info['name'],
-                        _query={'_v': info['md5']})
-            else:
-                url = info['url']
+            url = request.static_url(info['path'], _query={'_v': info['md5']})
 
         if url.startswith(app_url):
             url = url[app_url_len:]
@@ -382,18 +348,26 @@ def request_amd_init(request, spec='', bundles=()):
             '<script type="text/javascript">'
             'AMDJS_APP_URL="%s";</script>'%(cfg['amd.app-url'],))
 
-    c_tmpls.append(
-        '<script src="%s"> </script>'%(
-            request.route_url(
-                'pyramid-amd-init', specname=spec,
-                _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
+    if spec != '_':
+        initfile = '%s-init'%spec
+        c_tmpls.append(
+            '<script src="%s"> </script>'%(
+                request.static_url(
+                    specstorage[initfile], 
+                    _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
+    else:
+        c_tmpls.append(
+            '<script src="%s"> </script>'%(
+                request.route_url(
+                    'pyramid-amd-init', specname=spec,
+                    _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
 
     for name in (bundles if not isinstance(bundles, str) else (bundles,)):
         name = '%s.js'%name
         if name in specdata:
             c_tmpls.append(
-                '<script src="%s"></script>'%
-                request.route_url('pyramid-amd-spec',specname=spec,name=name))
+                '<script src="%s"></script>'% 
+                request.static_url(specdata[name]['path']))
 
     return '\n'.join(c_tmpls)
 

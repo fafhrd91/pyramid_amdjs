@@ -67,9 +67,6 @@ def includeme(cfg):
     # amd init route
     cfg.add_route('pyramid-amd-init', '/_amd_{specname}.js')
 
-    # amd bundle route
-    cfg.add_route('pyramid-amd-spec', '/_amd_{specname}/{name}')
-
     # static assets
     cfg.add_static_view('_amdjs/static', 'pyramid_amdjs:static/')
 
@@ -91,6 +88,4 @@ def includeme(cfg):
     cfg.include('pyramid_amdjs.static')
 
     # init amd specs
-    cfg.action(
-        'pyramid_amdjs.init_amd_spec',
-        amd.init_amd_spec, (cfg,), order=999999+1)
+    amd.init_amd_spec(cfg)
