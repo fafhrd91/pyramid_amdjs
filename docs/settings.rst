@@ -39,7 +39,6 @@ All .INI pyramid_amdjs settings
 
 ``amd.node``
 
-  Path to nodejs executable:
+  Path to nodejs executable. `pyramid_amdjs` uses nodejs for `handlebars templates compilation. If nodejs is not found `handlebars` compilation happen on client side.::
 
     amd.node = /usr/bin/node
-

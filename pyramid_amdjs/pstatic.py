@@ -40,6 +40,8 @@ class StaticCommand(object):
                 if os.path.exists(dst_path):
                     shutil.rmtree(dst_path)
 
+                print (resolver.resolve(spec).abspath())
+                print (spec, dst_path)
                 shutil.copytree(resolver.resolve(spec).abspath(), dst_path)
 
 

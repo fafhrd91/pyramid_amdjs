@@ -26,6 +26,15 @@ Then you can use jquery in your amd module
     )
 
 
+Support and Documentation
+-------------------------
+
+On irc, use the freenode network and find us on channels, #ptahproject and #pyramid.
+
+Documentation can be found in `docs` directory.  You can also see it online at `http://pyramid_amdjs.readthedocs.org/  <http://pyramid_amdjs.readthedocs.org/en/latest/index.html>`_
+
+Report bugs at `pyramid_amdjs @ Github <https://github.com/fafhrd91/pyramid_amdjs/issues>`_
+
 
 License
 -------
