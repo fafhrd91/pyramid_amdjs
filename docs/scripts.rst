@@ -8,14 +8,14 @@ These utilities are documented in this chapter.
 
 .. _amdjs_script:
 
-amdjs js bundles Settings
--------------------------
+amdjs bundles build tool
+------------------------
 
 
 .. _pstatic_script:
 
-Static management
------------------
+static resource management
+--------------------------
 
 You can use the ``pstatic`` command in a terminal window to copy a 
 all registered static resource to specified directory.

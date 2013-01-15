@@ -46,23 +46,20 @@ class TestStatic(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.pstatic.os')
     @mock.patch('pyramid_amdjs.pstatic.shutil')
-    @mock.patch('pyramid_amdjs.pstatic.bootstrap')
-    def test_static_command(self, m_boostrap, m_shutil, m_os):
+    def test_static_command(self, m_shutil, m_os):
         m_os.path.exists.return_value = True
-        m_boostrap.return_value = {'registry': self.registry}
 
-        args = mock.Mock()
-        args.dst = '/tmp'
-
-        cmd = pstatic.StaticCommand(args)
+        cmd = pstatic.StaticCommand('/tmp', self.registry)
         cmd.run()
 
         self.assertTrue(m_os.path.exists.called)
         self.assertTrue(m_shutil.rmtree.called)
         self.assertTrue(m_shutil.copytree.called)
 
+    @mock.patch('pyramid_amdjs.pstatic.bootstrap')
     @mock.patch('pyramid_amdjs.pstatic.StaticCommand')
-    def test_static_command_main(self, m_cmd):
+    def test_static_command_main(self, m_cmd, m_bootstrap):
+        m_bootstrap.return_value = {'registry': self.registry}
         cmd = m_cmd.return_value = mock.Mock()
         pstatic.main()
         self.assertTrue(cmd.run.called)

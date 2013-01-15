@@ -12,7 +12,8 @@ ID_STATIC = 'pyramid_amdjs:static'
 
 def main():
     args = StaticCommand.parser.parse_args()
-    cmd = StaticCommand(args)
+    env = bootstrap(args.config)
+    cmd = StaticCommand(args.dst, env['registry'])
     cmd.run()
 
 
@@ -24,14 +25,13 @@ class StaticCommand(object):
     parser.add_argument('dst', metavar='dst',
                         help='Destination directory')
 
-    def __init__(self, args):
-        self.options = args
-        env = bootstrap(args.config)
-        self.registry = env['registry']
+    def __init__(self, dst, registry):
+        self.dst = dst
+        self.registry = registry
 
     def run(self):
         resolver = AssetResolver()
-        dst = os.path.abspath(os.path.join(os.getcwd(), self.options.dst))
+        dst = os.path.abspath(os.path.join(os.getcwd(), self.dst))
 
         data = self.registry.get(ID_STATIC)
         if data:
