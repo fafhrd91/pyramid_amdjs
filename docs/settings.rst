@@ -1,5 +1,5 @@
-pyramid_amdjs settings
-----------------------
+.ini settings
+-------------
 All .INI pyramid_amdjs settings
 
 ``static.url``

@@ -1,5 +1,5 @@
-Ptah
-====
+pyramid_amdjs
+=============
 
 .. toctree::
    :maxdepth: 2
