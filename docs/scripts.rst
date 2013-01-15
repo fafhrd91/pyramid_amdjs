@@ -1,7 +1,7 @@
 .. _command_line_chapter:
 
-Command-line utilities
-======================
+Command-line 
+=============
 
 `pyramid_amdjs` package can be controlled by command-line utilities. 
 These utilities are documented in this chapter.
@@ -10,7 +10,6 @@ These utilities are documented in this chapter.
 
 amdjs js bundles Settings
 -------------------------
-
 
 
 .. _pstatic_script:
@@ -26,6 +25,6 @@ all registered static resource to specified directory.
    
    [fafhrd@... MyProject]$ ../bin/pstatic development.ini /path-to_dir/
 
-   * ptah: Ptah database migration
+   pyramid_amdjs:static/ ../_amdjs/static
 
    ...
