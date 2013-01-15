@@ -25,9 +25,6 @@ All .INI pyramid_amdjs settings
 ``amd.enabled``
 
 
-``amd.app-url``
-
-
 ``amd.spec-dir``
 
 

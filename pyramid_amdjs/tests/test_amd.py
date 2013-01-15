@@ -288,7 +288,7 @@ modules = lib2
         cfg['amd.spec'] = [('test', 'test2.js')]
         cfg['amd.spec-dir'] = d
 
-        m_asv = self.config.add_static_view = mock.Mock() 
+        m_asv = self.config.add_static_view = mock.Mock()
 
         init_amd_spec(self.config)
         self.assertTrue(m_asv.called)
@@ -344,15 +344,6 @@ class TestRequestRenderers(BaseTestCase):
         self.assertIn(
             '<script src="http://example.com/_amd__.js?_v=123"> </script>', text)
 
-    def test_render_init_amd_app_url(self):
-        self.cfg['amd.enabled'] = False
-        self.cfg['amd.app-url'] = 'http://example.com'
-
-        text = self.request.init_amd().strip()
-        self.assertEqual(
-            '<script type="text/javascript">AMDJS_APP_URL="http://example.com";</script>\n<script src="http://example.com/_amd__.js?_v=123"> </script>',
-            text)
-
     def test_include_js(self):
         text = self.request.include_js('test').strip()
         self.assertIn(
@@ -392,13 +383,13 @@ class TestRequestRenderers(BaseTestCase):
         init_amd_spec(self.config)
 
         self.registry[ID_AMD_SPEC] = {
-            'test': {'test.js': {'path':'/test/test.js'}},        
+            'test': {'test.js': {'path':'/test/test.js'}},
             'test-init': RESOLVER.resolve(
                 'pyramid_amdjs:tests/dir/test2.js').abspath()}
 
         text = self.request.init_amd('test').strip()
         self.assertIn(
-            '<script src="http://example.com/_amdjs/bundles/test2.js?_v=123"> </script>', 
+            '<script src="http://example.com/_amdjs/bundles/test2.js?_v=123"> </script>',
             text)
 
         m_static = self.request.static_url = mock.Mock()
@@ -407,7 +398,7 @@ class TestRequestRenderers(BaseTestCase):
         text = self.request.init_amd('test', 'test').strip()
         self.assertIn(
             '<script src="http://example.com/_amd_test/test.js"> </script>\n'
-            '<script src="http://example.com/_amd_test/test.js"></script>', 
+            '<script src="http://example.com/_amd_test/test.js"></script>',
             text)
 
 

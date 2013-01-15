@@ -16,7 +16,6 @@ def includeme(cfg):
     settings = cfg.get_settings()
     settings['amd.debug'] = asbool(settings.get('amd.debug', 't'))
     settings['amd.enabled'] = asbool(settings.get('amd.enabled', 't'))
-    settings['amd.app-url'] = settings.get('amd.app-url', '').strip()
     settings['amd.spec-dir'] = settings.get('amd.spec-dir', '').strip()
     settings['amd.tmpl-cache'] = settings.get('amd.tmpl-cache', '').strip()
     settings['amd.tmpl-langs'] = [

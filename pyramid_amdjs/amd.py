@@ -214,14 +214,6 @@ AMD_INIT_TMPL = """
 
 var pyramid_amd_modules = {\n%(mods)s}
 
-if (typeof(AMDJS_APP_URL) !== 'undefined') {
-  for (var name in pyramid_amd_modules) {
-      var prefix = pyramid_amd_modules[name].substr(0, 7)
-      if (prefix !== 'http://' && prefix !== 'https:/')
-          pyramid_amd_modules[name] = AMDJS_APP_URL + pyramid_amd_modules[name]
-  }
-}
-
 curl({dontAddFileExt:'.', paths: pyramid_amd_modules})
 """
 
@@ -343,17 +335,12 @@ def request_amd_init(request, spec='', bundles=()):
         spec = '_'
         specdata = ()
 
-    if cfg['amd.app-url']:
-        c_tmpls.append(
-            '<script type="text/javascript">'
-            'AMDJS_APP_URL="%s";</script>'%(cfg['amd.app-url'],))
-
     if spec != '_':
         initfile = '%s-init'%spec
         c_tmpls.append(
             '<script src="%s"> </script>'%(
                 request.static_url(
-                    specstorage[initfile], 
+                    specstorage[initfile],
                     _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
     else:
         c_tmpls.append(
@@ -366,7 +353,7 @@ def request_amd_init(request, spec='', bundles=()):
         name = '%s.js'%name
         if name in specdata:
             c_tmpls.append(
-                '<script src="%s"></script>'% 
+                '<script src="%s"></script>'%
                 request.static_url(specdata[name]['path']))
 
     return '\n'.join(c_tmpls)
