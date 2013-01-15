@@ -5,11 +5,11 @@ from pyramid_amdjs.compat import NODE_PATH
 def includeme(config):
     # jquery
     config.add_amd_js(
-        'jquery', 'pyramid_amdjs:static/lib/jquery-1.8.3.min.js',
+        'jquery', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
         'JQuery Library')
     config.add_amd_js(
-        'jquery18', 'pyramid_amdjs:static/lib/jquery-1.8.3.min.js',
-        'JQuery Library 1.8')
+        'jquery19', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
+        'JQuery Library 1.9')
 
     # underscore
     config.add_amd_js(

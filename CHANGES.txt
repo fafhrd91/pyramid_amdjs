@@ -7,6 +7,8 @@ CHANGES
 
 - Static resource management
 
+- jQuery 1.9.0
+
 
 0.3.2 (01-08-2012)
 ------------------
