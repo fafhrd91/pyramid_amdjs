@@ -5,6 +5,7 @@ pyramid_amdjs
    :maxdepth: 2
 
    settings.rst
+   scripts.rst
 
 
 Indices and tables
