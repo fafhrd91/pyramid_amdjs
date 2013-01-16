@@ -34,7 +34,7 @@ class TestBundleReg(BaseTestCase):
     _auto_include = False
 
     def test_bundle_registration(self):
-        from pyramid_amdjs.mustache import ID_BUNDLE
+        from pyramid_amdjs.handlebars import ID_BUNDLE
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/', i18n_domain='pyramid')
@@ -62,7 +62,7 @@ class TestBundleReg(BaseTestCase):
         self.assertRaises(
             ConfigurationError,
             self.config.add_handlebars_bundle,
-            'test-bundle', 'pyramid_amdjs:tests/bundle/cat1/form.mustache')
+            'test-bundle', 'pyramid_amdjs:tests/bundle/cat1/form.handlebars')
 
     def test_bundle_conflict(self):
         self.config.add_handlebars_bundle(
@@ -77,7 +77,7 @@ class TestBundleReg(BaseTestCase):
 class TestBundleRoute(BaseTestCase):
 
     def test_unknown_bundle(self):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         self.request.matchdict['name'] = 'unknown'
 
@@ -85,7 +85,7 @@ class TestBundleRoute(BaseTestCase):
         self.assertIsInstance(res, HTTPNotFound)
 
     def test_route(self):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
@@ -93,13 +93,13 @@ class TestBundleRoute(BaseTestCase):
 
         res = bundle_view(self.request)
         self.assertIn(
-            '"test-bundle",["pyramid","handlebars"],', res.text)
+            '"test-bundle",["pyramid:templates","handlebars"],', res.text)
         self.assertIn(
-            '"cat2":new pyramid.Templates("cat2",{"form2"', res.text)
+            '"cat2":new templates.Bundle("cat2",{"form2"', res.text)
 
-    @mock.patch('pyramid_amdjs.mustache.log')
+    @mock.patch('pyramid_amdjs.handlebars.log')
     def test_route_err_in_template(self, m_log):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle3/')
@@ -108,21 +108,21 @@ class TestBundleRoute(BaseTestCase):
         bundle_view(self.request)
         arg = m_log.error.call_args[0][0]
         self.assertTrue(arg.startswith('Compilation is failed'))
-        self.assertTrue(arg.endswith('tests/bundle3/form.mustache'))
+        self.assertTrue(arg.endswith('tests/bundle3/form.hb'))
 
     def test_list_bundles(self):
-        from pyramid_amdjs.mustache import list_bundles
+        from pyramid_amdjs.handlebars import list_bundles
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
         self.assertIn(
             ('test-bundle',
-             'http://example.com/_handlebars/test-bundle.js?_v=4e09fb715fbd5d0b6931f88bf5f58ed9'),
+             'http://example.com/_handlebars/test-bundle.js?_v=95bdc6ad75a066df7bb1b1ad31f0eca1'),
             list_bundles(self.request))
 
     def test_list_bundles_unset(self):
-        from pyramid_amdjs.mustache import list_bundles
+        from pyramid_amdjs.handlebars import list_bundles
 
         config = Configurator()
         request = self.make_request()
@@ -139,7 +139,7 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = '_'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=4e09fb715fbd5d0b6931f88bf5f58ed9"', res.text)
+        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=95bdc6ad75a066df7bb1b1ad31f0eca1"', res.text)
 
     def test_bundles_amd_spec(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
@@ -160,7 +160,7 @@ class TestBundleRoute(BaseTestCase):
             '"test-bundle":"/_amdjs/static/example.js?_v=123"', res.text)
 
     def test_build_bundle(self):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
@@ -170,9 +170,9 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             '"form-window":Handlebars.template(function', res.text)
 
-    @mock.patch('pyramid_amdjs.mustache.compat')
+    @mock.patch('pyramid_amdjs.handlebars.compat')
     def test_build_bundle_no_node(self, m_comp):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
@@ -184,9 +184,9 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             'form-window":Handlebars.compile("<div class=', res.text)
 
-    @mock.patch('pyramid_amdjs.mustache.get_localizer')
+    @mock.patch('pyramid_amdjs.handlebars.get_localizer')
     def test_build_bundle_toplevel_i18n(self, m_loc):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         cfg = self.registry.settings
         cfg['amd.tmpl-langs'] = ['en','pt_BR']
@@ -208,14 +208,14 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             "Handlebars.registerHelper('i18n-test-bundle'", res.text)
         self.assertIn(
-            'var bundle=new pyramid.Templates("test-bundle",{"form"', res.text)
+            'var bundle=new templates.Bundle("test-bundle",{"form"', res.text)
         self.assertIn(
             'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}', res.text)
 
-    @mock.patch('pyramid_amdjs.mustache.compat')
-    @mock.patch('pyramid_amdjs.mustache.get_localizer')
+    @mock.patch('pyramid_amdjs.handlebars.compat')
+    @mock.patch('pyramid_amdjs.handlebars.get_localizer')
     def test_build_bundle_toplevel_i18n_no_nodejs(self, m_loc, m_com):
-        from pyramid_amdjs.mustache import bundle_view
+        from pyramid_amdjs.handlebars import bundle_view
 
         cfg = self.registry.settings
         cfg['amd.tmpl-langs'] = ['en','pt_BR']
@@ -238,7 +238,7 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             "Handlebars.registerHelper('i18n-test-bundle'", res.text)
         self.assertIn(
-            'var bundle=new pyramid.Templates("test-bundle",{"form":Handlebars.compile(',
+            'var bundle=new templates.Bundle("test-bundle",{"form":Handlebars.compile(',
             res.text)
         self.assertIn(
             'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}', res.text)
@@ -252,13 +252,13 @@ class TestBuildBundle(BaseTestCase):
         self.path = tempfile.mkdtemp()
         self.cfg = self.registry.settings
 
-        from pyramid_amdjs import mustache
-        self.storage = self.registry.get(mustache.ID_BUNDLE)
+        from pyramid_amdjs import handlebars
+        self.storage = self.registry.get(handlebars.ID_BUNDLE)
 
         self.addCleanup(shutil.rmtree, self.path)
 
     def test_compile_new(self):
-        from pyramid_amdjs import mustache
+        from pyramid_amdjs import handlebars
 
         self.cfg['amd.tmpl-cache'] = self.path
         prefix = os.path.split(self.path)[-1]
@@ -267,8 +267,8 @@ class TestBuildBundle(BaseTestCase):
         with open(f, 'w') as fn:
             fn.write('<div>{{test}}</div>')
 
-        tmpl = text_type(mustache.compile_template(
-            'test', f, mustache.compat.NODE_PATH, self.path)[0])
+        tmpl = text_type(handlebars.compile_template(
+            'test', f, handlebars.compat.NODE_PATH, self.path)[0])
 
         self.assertTrue(os.path.isfile(
                 os.path.join(self.path, 'test-%s-template'%prefix)))
@@ -278,7 +278,7 @@ class TestBuildBundle(BaseTestCase):
             'function (Handlebars,depth0,helpers,partials,data) {', tmpl)
 
     def test_compile_no_node(self):
-        from pyramid_amdjs import mustache
+        from pyramid_amdjs import handlebars
 
         self.cfg['amd.tmpl-cache'] = self.path
         prefix = os.path.split(self.path)[-1]
@@ -287,7 +287,7 @@ class TestBuildBundle(BaseTestCase):
         with open(f, 'w') as fn:
             fn.write('<div>{{test}}</div>')
 
-        tmpl = text_type(mustache.compile_template(
+        tmpl = text_type(handlebars.compile_template(
             'test', f, None, self.path)[0])
 
         self.assertTrue(os.path.isfile(
@@ -297,7 +297,7 @@ class TestBuildBundle(BaseTestCase):
         self.assertIn('<div>{{test}}</div>', tmpl)
 
     def test_compile_new_i18n(self):
-        from pyramid_amdjs import mustache
+        from pyramid_amdjs import handlebars
 
         self.cfg['amd.tmpl-cache'] = self.path
         prefix = os.path.split(self.path)[-1]
@@ -306,8 +306,8 @@ class TestBuildBundle(BaseTestCase):
         with open(f, 'w') as fn:
             fn.write('<div>{{test}}{{#i18n}}i18n text{{/i18n}}</div>')
 
-        tmpl, i18n = mustache.compile_template(
-            'test', f, mustache.compat.NODE_PATH, self.path)
+        tmpl, i18n = handlebars.compile_template(
+            'test', f, handlebars.compat.NODE_PATH, self.path)
         tmpl = text_type(tmpl)
 
         self.assertIn('i18n text', i18n)
@@ -318,7 +318,7 @@ class TestBuildBundle(BaseTestCase):
             '<div>{{test}}{{#i18n-test}}i18n text{{/i18n-test}}</div>')
 
     def test_compile_existing(self):
-        from pyramid_amdjs import mustache
+        from pyramid_amdjs import handlebars
 
         self.cfg['amd.tmpl-cache'] = self.path
         prefix = os.path.split(self.path)[-1]
@@ -339,8 +339,8 @@ class TestBuildBundle(BaseTestCase):
         with open(f2, 'w') as fn:
             fn.write('existing2')
 
-        tmpl = text_type(mustache.compile_template(
-            'test', f, mustache.compat.NODE_PATH, self.path)[0])
+        tmpl = text_type(handlebars.compile_template(
+            'test', f, handlebars.compat.NODE_PATH, self.path)[0])
 
         self.assertEqual('existing2', tmpl)
 
@@ -348,7 +348,7 @@ class TestBuildBundle(BaseTestCase):
         """
         Skip compilation if it is compiled already
         """
-        from pyramid_amdjs import mustache
+        from pyramid_amdjs import handlebars
 
         self.cfg['amd.tmpl-cache'] = self.path
         prefix = os.path.split(self.path)[-1]
@@ -375,8 +375,8 @@ class TestBuildBundle(BaseTestCase):
         with open(f1, 'w') as fn:
             fn.write('["existing3"]')
 
-        tmpl,i18n = mustache.compile_template(
-            'test', f, mustache.compat.NODE_PATH, self.path)
+        tmpl,i18n = handlebars.compile_template(
+            'test', f, handlebars.compat.NODE_PATH, self.path)
 
         self.assertEqual(['existing3'], i18n)
 
@@ -384,11 +384,11 @@ class TestBuildBundle(BaseTestCase):
 class TestExtractI18N(unittest.TestCase):
 
     def test_extract(self):
-        from pyramid_amdjs.mustache import extract_i18n_mustache
+        from pyramid_amdjs.handlebars import extract_i18n
 
         f = NativeIO('<div>{{#i18n}}Test \n message{{/i18n}}</div>')
 
-        d = extract_i18n_mustache(f, [], [], [])
+        d = extract_i18n(f, [], [], [])
         self.assertEqual(d[0], (5, None, text_type('Test \n message'), []))
 
 

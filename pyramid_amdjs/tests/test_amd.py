@@ -155,7 +155,7 @@ class TestAmdInit(BaseTestCase):
         self.assertIsInstance(resp, FileResponse)
         self.assertEqual('max-age=31536000', resp.headers['Cache-Control'])
 
-    def test_amd_init_with_spec_mustache(self):
+    def test_amd_init_with_spec_handlebars(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
 
         self.request.matchdict['specname'] = 'test'

@@ -58,7 +58,7 @@ class TestAmdCommand(BaseTestCase):
         self.config.add_amd_js(
             'test', 'pyramid_amdjs:tests/dir/test.js', 'Test module')
         self.config.add_handlebars_bundle(
-            'mustache-test', 'pyramid_amdjs:tests/dir/', 'Mustache bundle')
+            'handlebars-test', 'pyramid_amdjs:tests/dir/', 'Handlebars bundle')
 
         cfg = self.registry.settings
 
@@ -98,7 +98,7 @@ class TestAmdCommand(BaseTestCase):
         self.assertIn("""
 * bundle.js
     test: pyramid_amdjs:tests/dir/test.js
-    mustache-test: templates bundle""", val)
+    handlebars-test: templates bundle""", val)
         self.assertTrue(os.path.isfile(os.path.join(d, 'bundle.js')))
         self.assertFalse(os.path.isfile(os.path.join(d, 'bundle2.js')))
         self.assertTrue(os.path.isfile(os.path.join(d, 'init-main.js')))
@@ -120,7 +120,7 @@ class TestAmdCommand(BaseTestCase):
         self.assertIn("""
 * bundle.js
     test: pyramid_amdjs:tests/dir/test.js
-    mustache-test: templates bundle""", val)
+    handlebars-test: templates bundle""", val)
         self.assertTrue(os.path.isfile(os.path.join(d, 'bundle.js')))
 
         shutil.rmtree(d)

@@ -22,10 +22,10 @@ def amdjs_tween_factory(handler, registry):
 
         response = handler(request)
 
-        if ('amdjs_data' in request.__dict__ and 
+        if ('amdjs_data' in request.__dict__ and
             request.amdjs_data['init'] and
-            response.content_type == 'text/html' and 
-            response.status_code == 200 and 
+            response.content_type == 'text/html' and
+            response.status_code == 200 and
             response.content_length != 0 and
             response.headers.get('Transfer-Encoding', '') != 'chunked'):
 
@@ -59,9 +59,9 @@ def amdjs_tween_factory(handler, registry):
             if mods:
                 c_tmpls.append(
                     ('<script type="text/javascript">'
-                     'curl({paths:pyramid_amd_modules},[%s])</script>' % 
+                     'curl({paths:pyramid_amd_modules},[%s])</script>' %
                      ','.join(mods)))
-                
+
             if data['fn']:
                 c_tmpls.append(
                     '<script type="text/javascript">\n%s</script>'%
@@ -74,7 +74,7 @@ def amdjs_tween_factory(handler, registry):
                     text[:pos], '\n'.join(c_tmpls), text[pos:])
 
         return response
-                
+
     return amdjs_tween
 
 

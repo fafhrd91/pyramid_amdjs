@@ -16,13 +16,13 @@ from .compat import json, check_output
 
 log = logging.getLogger('pyramid_amdjs')
 
-ID_BUNDLE = 'pyramid_amdjs:mustache'
+ID_BUNDLE = 'pyramid_amdjs:handlebars'
 ID_AMD_MODULE = 'pyramid_amdjs:amd-module'
 
 HB = AssetResolver().resolve(
     'pyramid_amdjs:node_modules/handlebars/bin/handlebars').abspath()
 
-ext_mustache = ('.mustache', '.hb')
+ext_handlebars = ('.mustache', '.hb')
 
 
 def register_handlebars_bundle(cfg, name,path='',description='',i18n_domain=''):
@@ -128,12 +128,12 @@ def compile_template(name, path, node_path, cache_dir):
     return text_(tmpl, 'utf-8'), i18n
 
 
-template = text_type("""define("%s",["pyramid","handlebars"],
-function(pyramid, Handlebars) {
-var bundle=%s;pyramid.Templates.bundles["%s"]=bundle;%sreturn bundle})
+template = text_type("""define("%s",["pyramid:templates","handlebars"],
+function(templates, Handlebars) {
+var bundle=%s;templates.bundles["%s"]=bundle;%sreturn bundle})
 """)
 
-i18n_template = text_type("""\nHandlebars.registerHelper('%s',function(context, options) {return pyramid.i18n(bundle, this, context, options)});
+i18n_template = text_type("""\nHandlebars.registerHelper('%s',function(context, options) {return templates.i18n(bundle, this, context, options)});
 bundle.__i18n__ = %s;""")
 
 class _r(object):
@@ -165,7 +165,7 @@ def build_hb_bundle(name, intr, registry):
         bdir = os.path.join(path, bname)
 
         if not os.path.isdir(bdir):
-            if bname.endswith(ext_mustache) and bname[0] not in ('.#~'):
+            if bname.endswith(ext_handlebars) and bname[0] not in ('.#~'):
                 fname = os.path.join(path, bname)
                 tmpl, _i18n = compile_template(name,fname,node_path,cache_dir)
                 if tmpl:
@@ -173,29 +173,29 @@ def build_hb_bundle(name, intr, registry):
                 if _i18n:
                     i18n.update(dict((v, None) for v in _i18n))
         else:
-            mustache = []
+            hb_tmpls = []
             for tname in os.listdir(bdir):
-                if tname.endswith(ext_mustache) and tname[0] not in ('.#~'):
+                if tname.endswith(ext_handlebars) and tname[0] not in ('.#~'):
                     fname = os.path.join(bdir, tname)
                     tmpl, _i18n = compile_template(
                         name, fname, node_path, cache_dir)
                     if tmpl:
-                        mustache.append((tname.rsplit('.', 1)[0], tmpl))
+                        hb_tmpls.append((tname.rsplit('.', 1)[0], tmpl))
                     if _i18n:
                         i18n.update(dict((v, None) for v in _i18n))
 
             if node_path:
-                mustache = (
+                hb_tmpls = (
                     text_type('"%s":Handlebars.template(%s)')%(
-                        name, tmpl) for name, tmpl in mustache)
+                        name, tmpl) for name, tmpl in hb_tmpls)
             else:
-                mustache = (
+                hb_tmpls = (
                     text_type('"%s":Handlebars.compile(%s)')%(
-                        name, json.dumps(tmpl)) for name, tmpl in mustache)
+                        name, json.dumps(tmpl)) for name, tmpl in hb_tmpls)
 
             templates.append(
-                text_type('"%s":new pyramid.Templates("%s",{%s})')%(
-                    bname, bname, ','.join(mustache)))
+                text_type('"%s":new templates.Bundle("%s",{%s})')%(
+                    bname, bname, ','.join(hb_tmpls)))
 
     if top:
         if node_path:
@@ -205,7 +205,7 @@ def build_hb_bundle(name, intr, registry):
             top = (text_type('"%s":Handlebars.compile(%s)')%(
                 name, json.dumps(tmpl)) for name, tmpl in top)
 
-        tmpl = text_type('new pyramid.Templates("%s",{%s},{%s})')%(
+        tmpl = text_type('new templates.Bundle("%s",{%s},{%s})')%(
             name, text_type(',\n').join(top), text_type(',\n').join(templates))
     else:
         tmpl = text_type('{%s}')%(text_type(',\n').join(templates))
@@ -290,7 +290,7 @@ def extract_i18n_str(text):
     return messages
 
 
-def extract_i18n_mustache(fileobj, keywords, comment_tags, options):
+def extract_i18n(fileobj, keywords, comment_tags, options):
     text = text_(fileobj.read(), 'utf-8')
     return [(first, None, message, [])
             for first, last, message in extract_i18n_str(text)]

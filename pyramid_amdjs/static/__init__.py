@@ -3,7 +3,7 @@ from pyramid_amdjs.compat import NODE_PATH
 
 
 def includeme(config):
-    # jquery
+    # jquery http://jquery.org
     config.add_amd_js(
         'jquery', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
         'JQuery Library')
@@ -11,15 +11,23 @@ def includeme(config):
         'jquery19', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
         'JQuery Library 1.9')
 
-    # underscore
+    # backbone http://backbonejs.org
+    config.add_amd_js(
+        'backbone', 'pyramid_amdjs:static/lib/backbone-min.js')
+
+    # lodash https://github.com/amdjs/underscore
     config.add_amd_js(
         'underscore', 'pyramid_amdjs:static/lib/underscore-min.js')
 
-    # moment
+    # json2
     config.add_amd_js(
-        'moment', 'pyramid_amdjs:static/lib/moment.js')
+        'json2', 'pyramid_amdjs:static/lib/json2.js')
 
-    # bootstrap
+    # moment http://momentjs.com
+    config.add_amd_js(
+        'moment', 'pyramid_amdjs:static/lib/moment.min.js')
+
+    # bootstrap http://twitter.github.com/bootstrap/
     config.add_amd_js(
         'bootstrap', 'pyramid_amdjs:static/bootstrap/bootstrap.min.js',
         'Twitter bootstrap javscript library', ('jquery',))
@@ -32,7 +40,7 @@ def includeme(config):
         'pyramid_amdjs:static/bootstrap/bootstrap-responsive.min.css',
         'Twitter bootstrap javscript library (Responsive)')
 
-    # handlebars
+    # handlebars http://handlebarsjs.com/
     node_path = config.get_settings()['amd.node']
     if not node_path:
         node_path = NODE_PATH
@@ -49,9 +57,14 @@ def includeme(config):
     # pyramid
     config.add_amd_js(
         'pyramid', 'pyramid_amdjs:static/pyramid.js',
-        'Pyramid amdjs', ('handlebars','moment'))
+        'Pyramid amdjs', ('backbone'))
 
-    # simple bootstrap modal
+    # handlebars support helper
     config.add_amd_js(
-        'pyramid:form', 'pyramid_amdjs:static/form.js',
-        'Pyramid form', ('handlebars', 'pyramid', 'bootstrap'))
+        'pyramid:templates', 'pyramid_amdjs:static/templates.js',
+        'Handlebars templates', ('handlebars'))
+
+    # handlebars datetime helper
+    config.add_amd_js(
+        'pyramid:datetime', 'pyramid_amdjs:static/datetime.js',
+        'Datetime handlebars helper', ('handlebars','moment'))

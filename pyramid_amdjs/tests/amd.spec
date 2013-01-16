@@ -1,6 +1,6 @@
 [bundle.js]
 modules = 
    test
-   mustache-test
+   handlebars-test
 
 [bundle2.js]

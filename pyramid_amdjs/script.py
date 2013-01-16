@@ -11,7 +11,7 @@ from pyramid.paster import bootstrap
 
 from .amd import ID_AMD_MODULE, ID_AMD_SPEC, build_init
 from .compat import OrderedDict, NODE_PATH, check_output
-from .mustache import ID_BUNDLE, build_hb_bundle
+from .handlebars import ID_BUNDLE, build_hb_bundle
 
 
 grpTitleWrap = textwrap.TextWrapper(

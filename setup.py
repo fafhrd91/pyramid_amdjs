@@ -2,7 +2,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version='0.4'
+version='0.5'
 
 install_requires = ['setuptools',
                     'pyramid >= 1.4',
@@ -55,7 +55,7 @@ setup(name='pyramid_amdjs',
               'pstatic = pyramid_amdjs.pstatic:main',
           ],
           'babel.extractors': [
-              'mustache = pyramid_amdjs.mustache:extract_i18n_mustache',
+              'handlebars = pyramid_amdjs.handlebars:extract_i18n',
           ],
       },
   )

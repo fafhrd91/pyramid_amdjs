@@ -2,6 +2,18 @@
 CHANGES
 =======
 
+0.5 (01-17-2013)
+----------------
+
+- js refactoring
+
+- hb templates splited to separate js
+
+- `datetime` hb helper is optional
+
+- added backbonejs
+
+
 0.4 (01-15-2013)
 ----------------
 
