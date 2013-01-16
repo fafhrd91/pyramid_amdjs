@@ -13,7 +13,7 @@ class TestRequire(BaseTestCase):
 
         self.data = self.request.amdjs_data = {
             'js': [], 'css': [], 'spec': '', 'fn': [], 'init': False}
-    
+
     def test_require_js(self):
         self.request.require_js('mod1')
         self.assertTrue(self.data['init'])
@@ -64,7 +64,7 @@ class TestAmdjsTween(BaseTestCase):
         super(TestAmdjsTween, self).setUp()
 
         self.request.accept = 'text/html'
-        self.request.is_xhr = lambda: False
+        self.request.is_xhr = False
 
         self.js = []
         self.css = []
@@ -106,7 +106,7 @@ class TestAmdjsTween(BaseTestCase):
         self.assertFalse(hasattr(res, '_amdjs_inititalized'))
 
     def test_xhr(self):
-        self.request.is_xhr = lambda: True
+        self.request.is_xhr = True
 
         res = self._make_one(self.request)
         self.assertFalse(hasattr(res, '_amdjs_inititalized'))

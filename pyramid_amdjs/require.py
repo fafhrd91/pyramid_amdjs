@@ -14,10 +14,10 @@ def amdjs_tween_factory(handler, registry):
     enabled = settings['amd.enabled']
     build_md5 = registry[ID_AMD_BUILD_MD5]
     specstorage = registry[ID_AMD_SPEC]
-                
+
     def amdjs_tween(request):
         """ amdjs tween without spec support """
-        if ('text/html' not in request.accept or request.is_xhr()):
+        if ('text/html' not in request.accept or request.is_xhr):
             return handler(request)
 
         response = handler(request)
