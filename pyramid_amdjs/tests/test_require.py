@@ -123,7 +123,7 @@ class TestAmdjsTween(BaseTestCase):
         self.fn = [(('jquery',), 'function($){}')]
         self.spec = '_'
 
-        res = self._make_one(self.request).body
+        res = self._make_one(self.request).text
 
         self.assertIn(
             '<script src="http://example.com/_amd__.js', res)
@@ -158,7 +158,7 @@ class TestAmdjsTween(BaseTestCase):
         self.fn = [(('jquery',), 'function($){}')]
         self.spec = 'test'
 
-        res = self._make_one(self.request).body
+        res = self._make_one(self.request).text
 
         self.assertIn(
             '<script src="http://example.com/_amdjs/bundles/test2.js', res)
