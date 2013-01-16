@@ -25,6 +25,14 @@ Then you can use jquery in your amd module
            }
     )
 
+To include your module to page:
+
+.. code-block:: python
+
+   def my_view(request):
+       request.require_js('my-package')
+
+
 
 Support and Documentation
 -------------------------
