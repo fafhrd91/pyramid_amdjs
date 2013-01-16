@@ -116,10 +116,10 @@ class TestBundleRoute(BaseTestCase):
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
 
-        self.assertIn(
-            ('test-bundle',
-             'http://example.com/_handlebars/test-bundle.js?_v=95bdc6ad75a066df7bb1b1ad31f0eca1'),
-            list_bundles(self.request))
+        res = list_bundles(self.request)
+        self.assertEqual('test-bundle', res[0][0])
+        self.assertTrue(res[0][1].startswith(
+            'http://example.com/_handlebars/test-bundle.js?_v'))
 
     def test_list_bundles_unset(self):
         from pyramid_amdjs.handlebars import list_bundles
