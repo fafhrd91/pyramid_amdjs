@@ -9,6 +9,13 @@ def includeme(cfg):
     from pyramid_amdjs import amd
     from pyramid_amdjs.pstatic import StaticURLInfo
 
+    # amdjs tween
+    cfg.add_tween('pyramid_amdjs.require.amdjs_tween_factory')
+
+    def get_amdjs_data(request):
+        return {'js': [], 'css': [], 'spec': '', 'fn': [], 'init': False}
+    cfg.add_request_method(get_amdjs_data, 'amdjs_data', True, True)
+
     # static
     cfg.registry.registerUtility(StaticURLInfo(), IStaticURLInfo)
 
@@ -43,6 +50,11 @@ def includeme(cfg):
     cfg.add_request_method(amd.request_amd_init, 'init_amd')
     cfg.add_request_method(amd.request_includes, 'include_js')
     cfg.add_request_method(amd.request_css_includes, 'include_css')
+
+    cfg.add_request_method(require.require_js, 'require_js')
+    cfg.add_request_method(require.require_fn, 'require_fn')
+    cfg.add_request_method(require.require_css, 'require_css')
+    cfg.add_request_method(require.require_spec, 'require_spec')
 
     # config directives
     cfg.add_directive('add_amd_js', amd.add_js_module)
