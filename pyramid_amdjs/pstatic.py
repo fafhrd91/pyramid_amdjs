@@ -25,6 +25,8 @@ class StaticCommand(object):
     parser.add_argument('dst', metavar='dst',
                         help='Destination directory')
 
+    ignores = ('~*','*~','*.py','*.pyc','*.bak','__pycache__')
+
     def __init__(self, dst, registry):
         self.dst = dst
         self.registry = registry
@@ -36,11 +38,17 @@ class StaticCommand(object):
         data = self.registry.get(ID_STATIC)
         if data:
             for name, spec in data.items():
+                if name.startswith('/'):
+                    name = name[1:]
+
                 dst_path = os.path.join(dst, name)
                 if os.path.exists(dst_path):
                     shutil.rmtree(dst_path)
 
-                shutil.copytree(resolver.resolve(spec).abspath(), dst_path)
+                print ('Source: %s'%spec)
+                shutil.copytree(
+                    resolver.resolve(spec).abspath(), dst_path,
+                    ignore=shutil.ignore_patterns(*self.ignores))
 
 
 class StaticURLInfo(StaticURLInfo):
