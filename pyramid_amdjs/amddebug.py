@@ -62,7 +62,7 @@ def load_dir(registry, dirname, directory):
                         filename[:-3], text_(f.read()), p):
                     mods.append((name, p, amd.JS_MOD, filepath))
         if filename.endswith('.css'):
-            mods.append((filename[:-4], p, amd.CSS_MOD, filepath))
+            mods.append((filename, p, amd.CSS_MOD, filepath))
 
     for name, fname, tp, fpath in mods:
         if name in all_mods and fpath != all_mods[name]['fpath']:
@@ -103,9 +103,6 @@ def build_init(request, specname):
         if url.startswith(app_url):
             url = url[app_url_len:]
 
-        if info['tp'] == amd.CSS_MOD:
-            js.append('"%s.css": "%s"'%(name, url))
-        elif info['tp'] == amd.JS_MOD:
-            js.append('"%s": "%s"'%(name, url))
+        js.append('"%s": "%s"'%(name, url))
 
     return amd.build_init(request, '_', js)

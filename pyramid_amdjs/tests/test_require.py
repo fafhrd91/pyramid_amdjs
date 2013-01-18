@@ -14,6 +14,18 @@ class TestRequire(BaseTestCase):
         self.data = self.request.amdjs_data = {
             'js': [], 'css': [], 'spec': '', 'fn': [], 'init': False}
 
+    def test_require(self):
+        self.request.require('mod1')
+        self.assertTrue(self.data['init'])
+        self.assertEqual(['mod1'], self.data['js'])
+
+    def test_require_unique(self):
+        self.request.require('mod1', 'mod2', 'mod1')
+        self.assertEqual(['mod1', 'mod2'], self.data['js'])
+
+        self.request.require('mod1', 'mod2', 'mod1')
+        self.assertEqual(['mod1', 'mod2'], self.data['js'])
+
     def test_require_js(self):
         self.request.require_js('mod1')
         self.assertTrue(self.data['init'])

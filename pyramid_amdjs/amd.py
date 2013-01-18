@@ -274,10 +274,7 @@ def build_init(request, specname, extra=()):
             if url.startswith(app_url):
                 url = url[app_url_len:]
 
-            if intr['tp'] == CSS_MOD:
-                js.append('"%s.css": "%s"'%(name, url))
-            elif intr['tp'] == JS_MOD:
-                js.append('"%s": "%s"'%(name, url))
+            js.append('"%s": "%s"'%(name, url))
 
     # list handlebars bundles, in case if bundle is part of spec
     for name, url in list_bundles(request):
@@ -379,4 +376,4 @@ def request_css_includes(request, css=()):
         css = (css,)
 
     return ('<script type="text/javascript">curl({paths:pyramid_amd_modules},[%s])</script>' %
-            ','.join("'css!%s.css'"%c for c in css))
+            ','.join("'css!%s'"%c for c in css))

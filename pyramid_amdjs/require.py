@@ -54,7 +54,7 @@ def amdjs_tween_factory(handler, registry):
                             _query={'_v': build_md5(request, '_')}))]
 
             mods = ["'%s'"%m for m in data['js']]
-            mods.extend("'css!%s.css'"%c for c in data['css'])
+            mods.extend("'css!%s'"%c for c in data['css'])
 
             if mods:
                 c_tmpls.append(

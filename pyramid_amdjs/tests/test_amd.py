@@ -76,7 +76,7 @@ class TestAmd(BaseTestCase):
             ConfigurationConflictError, self.config.commit)
 
     def test_amd_dir(self):
-        from pyramid_amdjs.amd import ID_AMD_MODULE
+        from pyramid_amdjs.amd import ID_AMD_MODULE, CSS_MOD
 
         self.config.add_amd_dir('pyramid_amdjs:tests/dir/')
         self.config.commit()
@@ -84,6 +84,9 @@ class TestAmd(BaseTestCase):
         data = self.registry.get(ID_AMD_MODULE)
         self.assertEqual(data['jca-globals']['path'],
                          'pyramid_amdjs:tests/dir/test.js')
+        self.assertEqual(data['test3']['path'],
+                         'pyramid_amdjs:tests/dir/test3.css')
+        self.assertEqual(data['test3']['tp'], CSS_MOD)
 
 
 class TestAmdInit(BaseTestCase):
@@ -185,7 +188,20 @@ class TestAmdInit(BaseTestCase):
         self.assertIn(
             '"test-mod": "/_tests/test.js?_v=4ce2ec81952ee8e6d0058334361babbe"', resp.text)
         self.assertIn(
-            '"test-css.css": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"', resp.text)
+            '"test-css": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"', resp.text)
+
+    def test_amd_mod_from_dir(self):
+        from pyramid_amdjs.amd import amd_init
+
+        self.config.add_amd_dir('pyramid_amdjs:tests/dir/')
+
+        self.request.matchdict['specname'] = '_'
+
+        resp = amd_init(self.request)
+        self.assertIn(
+            '"jca-globals": "/_tests/test.js?_v=4ce2ec81952ee8e6d0058334361babbe"', resp.text)
+        self.assertIn(
+            '"test3": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"', resp.text)
 
 
 class TestInitAmdSpec(BaseTestCase):
@@ -356,7 +372,7 @@ class TestRequestRenderers(BaseTestCase):
     def test_include_css(self):
         text = self.request.include_css('test-css').strip()
         self.assertIn(
-            "curl({paths:pyramid_amd_modules},['css!test-css.css'])", text)
+            "curl({paths:pyramid_amd_modules},['css!test-css'])", text)
 
     def test_render_js_includes_unknown_spec(self):
         self.cfg['amd.enabled'] = True

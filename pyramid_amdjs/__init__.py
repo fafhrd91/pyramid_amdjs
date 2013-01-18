@@ -51,6 +51,7 @@ def includeme(cfg):
     cfg.add_request_method(amd.request_includes, 'include_js')
     cfg.add_request_method(amd.request_css_includes, 'include_css')
 
+    cfg.add_request_method(require.require_js, 'require')
     cfg.add_request_method(require.require_js, 'require_js')
     cfg.add_request_method(require.require_fn, 'require_fn')
     cfg.add_request_method(require.require_css, 'require_css')
