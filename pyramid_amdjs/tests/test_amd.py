@@ -84,9 +84,9 @@ class TestAmd(BaseTestCase):
         data = self.registry.get(ID_AMD_MODULE)
         self.assertEqual(data['jca-globals']['path'],
                          'pyramid_amdjs:tests/dir/test.js')
-        self.assertEqual(data['test3']['path'],
+        self.assertEqual(data['test3.css']['path'],
                          'pyramid_amdjs:tests/dir/test3.css')
-        self.assertEqual(data['test3']['tp'], CSS_MOD)
+        self.assertEqual(data['test3.css']['tp'], CSS_MOD)
 
 
 class TestAmdInit(BaseTestCase):
@@ -201,7 +201,7 @@ class TestAmdInit(BaseTestCase):
         self.assertIn(
             '"jca-globals": "/_tests/test.js?_v=4ce2ec81952ee8e6d0058334361babbe"', resp.text)
         self.assertIn(
-            '"test3": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"', resp.text)
+            '"test3.css": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"', resp.text)
 
 
 class TestInitAmdSpec(BaseTestCase):

@@ -196,7 +196,7 @@ def add_amd_dir(cfg, path):
                 for name, deps in extract_mod(filename[:-3],text_(f.read()),p):
                     mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
-            mods.append((filename[:-4], p, CSS_MOD))
+            mods.append((filename, p, CSS_MOD))
 
     for name, p, mod in sorted(mods):
         if mod == JS_MOD:
