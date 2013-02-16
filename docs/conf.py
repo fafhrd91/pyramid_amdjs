@@ -161,8 +161,8 @@ htmlhelp_basename = 'atemplatedoc'
 # (source start file, target name, title,
 #  author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'atemplate.tex', 'pyramid_amdjs documentation',
-   'Developers', 'manual'),
+    ('index', 'atemplate.tex', 'pyramid_amdjs documentation',
+        'Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the

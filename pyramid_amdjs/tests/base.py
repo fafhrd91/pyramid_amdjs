@@ -17,8 +17,8 @@ class BaseTestCase(TestCase):
     _auto_include = True
     _settings = {'amd.debug': 'f'}
     _environ = {
-        'wsgi.url_scheme':'http',
-        'wsgi.version':(1,0),
+        'wsgi.url_scheme': 'http',
+        'wsgi.version': (1, 0),
         'HTTP_HOST': 'example.com',
         'SCRIPT_NAME': '',
         'PATH_INFO': '/'}
@@ -28,7 +28,7 @@ class BaseTestCase(TestCase):
 
     def make_request(self, environ=None, **kwargs):
         if environ is None:
-            environ=self._environ
+            environ = self._environ
         request = testing.DummyRequest(environ=dict(environ), **kwargs)
         request.request_iface = IRequest
         request.registry = self.registry

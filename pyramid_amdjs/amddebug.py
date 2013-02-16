@@ -17,7 +17,7 @@ def add_amd_dir(cfg, path):
     directory = resolver.resolve(path).abspath()
 
     paths.append((path, directory))
-    log.info("Add resource dir: %s"%path)
+    log.info("Add resource dir: %s" % path)
 
 
 def load_dir(registry, dirname, directory):
@@ -99,10 +99,11 @@ def build_init(request, specname):
 
     js = []
     for name, info in data['mods'].items():
-        url = '%s'%request.static_url(info['fname'], _query={'_v': info['md5']})
+        url = '%s' % request.static_url(
+            info['fname'], _query={'_v': info['md5']})
         if url.startswith(app_url):
             url = url[app_url_len:]
 
-        js.append('"%s": "%s"'%(name, url))
+        js.append('"%s": "%s"' % (name, url))
 
     return amd.build_init(request, '_', js)

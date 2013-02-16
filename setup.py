@@ -2,11 +2,10 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-version='0.5.2'
+version = '0.5.3'
 
 install_requires = ['setuptools',
-                    'pyramid >= 1.4',
-]
+                    'pyramid >= 1.4']
 
 if sys.version_info[:2] == (2, 6):
     install_requires.extend((
@@ -14,10 +13,11 @@ if sys.version_info[:2] == (2, 6):
         'ordereddict',
         'unittest2'))
 
-if sys.version_info[:2] in ((2,6),(2,7),(3,3)):
-    install_requires.extend(('simplejson',))
+if sys.version_info[:2] in ((2, 6), (2, 7), (3, 3)):
+    install_requires.extend(('simplejson', ))
 
 tests_require = install_requires + ['nose', 'mock']
+
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
@@ -56,6 +56,5 @@ setup(name='pyramid_amdjs',
           ],
           'babel.extractors': [
               'handlebars = pyramid_amdjs.handlebars:extract_i18n',
-          ],
-      },
-  )
+          ]}
+      )

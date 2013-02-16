@@ -5,10 +5,10 @@ from pyramid_amdjs.compat import NODE_PATH
 def includeme(config):
     # jquery http://jquery.org
     config.add_amd_js(
-        'jquery', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
+        'jquery', 'pyramid_amdjs:static/lib/jquery-1.9.1.min.js',
         'JQuery Library')
     config.add_amd_js(
-        'jquery19', 'pyramid_amdjs:static/lib/jquery-1.9.0.min.js',
+        'jquery19', 'pyramid_amdjs:static/lib/jquery-1.9.1.min.js',
         'JQuery Library 1.9')
 
     # backbone http://backbonejs.org
@@ -57,14 +57,14 @@ def includeme(config):
     # pyramid
     config.add_amd_js(
         'pyramid', 'pyramid_amdjs:static/pyramid.js',
-        'Pyramid amdjs', ('backbone'))
+        'Pyramid amdjs', ('backbone',))
 
     # handlebars support helper
     config.add_amd_js(
         'pyramid:templates', 'pyramid_amdjs:static/templates.js',
-        'Handlebars templates', ('handlebars'))
+        'Handlebars templates', ('handlebars',))
 
     # handlebars datetime helper
     config.add_amd_js(
         'pyramid:datetime', 'pyramid_amdjs:static/datetime.js',
-        'Datetime handlebars helper', ('handlebars','moment'))
+        'Datetime handlebars helper', ('handlebars', 'moment'))

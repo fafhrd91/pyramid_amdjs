@@ -25,7 +25,7 @@ class StaticCommand(object):
     parser.add_argument('dst', metavar='dst',
                         help='Destination directory')
 
-    ignores = ('~*','*~','*.py','*.pyc','*.bak','__pycache__')
+    ignores = ('~*', '*~', '*.py', '*.pyc', '*.bak', '__pycache__')
 
     def __init__(self, dst, registry):
         self.dst = dst
@@ -45,7 +45,7 @@ class StaticCommand(object):
                 if os.path.exists(dst_path):
                     shutil.rmtree(dst_path)
 
-                print ('Source: %s'%spec)
+                print('Source: %s' % spec)
                 shutil.copytree(
                     resolver.resolve(spec).abspath(), dst_path,
                     ignore=shutil.ignore_patterns(*self.ignores))

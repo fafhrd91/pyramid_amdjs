@@ -43,7 +43,7 @@ def init_amd_spec(config, cache_max_age=None):
     specs = {}
     for spec, specfile in cfg['amd.spec']:
         if spec in specs:
-            raise ConfigurationError("Spec '%s' already defined."%spec)
+            raise ConfigurationError("Spec '%s' already defined." % spec)
 
         specs[spec] = specfile
 
@@ -60,9 +60,10 @@ def init_amd_spec(config, cache_max_age=None):
             items = dict(parser.items(section))
 
             if section.endswith('.js'):
-                modules = [s for s in
-                           [s.strip() for s in items.get('modules', '').split()]
-                           if not s.startswith('#')]
+                modules = [
+                    s for s in
+                    [s.strip() for s in items.get('modules', '').split()]
+                    if not s.startswith('#')]
                 if modules:
                     md5 = hashlib.md5()
                     fpath = os.path.join(directory, section)
@@ -78,7 +79,8 @@ def init_amd_spec(config, cache_max_age=None):
                     mods[mod] = item
 
         spec_mods[spec] = mods
-        spec_mods['%s-init'%spec] = os.path.join(directory, 'init-%s.js'%spec)
+        spec_mods['%s-init' % spec] = os.path.join(
+            directory, 'init-%s.js' % spec)
 
     config.registry[ID_AMD_SPEC] = spec_mods
     config.registry[ID_AMD_SPEC_] = cache_max_age
@@ -115,7 +117,7 @@ def add_js_module(cfg, name, path, description='', requires=()):
     storage[name] = intr
 
     cfg.action(discr, introspectables=(intr,))
-    log.info("Add js module: %s path:%s"%(name, path))
+    log.info("Add js module: %s path:%s" % (name, path))
 
 
 def add_css_module(cfg, name, path, description=''):
@@ -143,7 +145,7 @@ def add_css_module(cfg, name, path, description=''):
     storage[name] = intr
 
     cfg.action(discr, introspectables=(intr,))
-    log.info("Add css module: %s path:%s"%(name, path))
+    log.info("Add css module: %s path:%s" % (name, path))
 
 
 def extract_mod(name, text, path):
@@ -160,12 +162,12 @@ def extract_mod(name, text, path):
             break
 
         pos = p2
-        chunk = ''.join(ch.strip() for ch in text[p1+7:p2].split())
+        chunk = ''.join(ch.strip() for ch in text[p1 + 7:p2].split())
         if chunk.startswith("'") or chunk.startswith('"'):
-            name, chunk = chunk.split(',',1)
+            name, chunk = chunk.split(',', 1)
             name = ''.join(ch for ch in name if ch not in "\"'[]")
         else:
-            log.warning("Empty name is not supported, %s.js"%name)
+            log.warning("Empty name is not supported, %s.js" % name)
             continue
 
         deps = [d for d in
@@ -174,8 +176,9 @@ def extract_mod(name, text, path):
         mods[name] = deps
 
     if not mods:
-        log.warning("Can't detect amdjs module name for: %s"%path)
-        raise ConfigurationError("Can't detect amdjs module name for: %s"%path)
+        log.warning("Can't detect amdjs module name for: %s" % path)
+        raise ConfigurationError(
+            "Can't detect amdjs module name for: %s" % path)
 
     return mods.items()
 
@@ -193,7 +196,8 @@ def add_amd_dir(cfg, path):
 
         if filename.endswith('.js'):
             with open(os.path.join(directory, filename), 'rb') as f:
-                for name, deps in extract_mod(filename[:-3],text_(f.read()),p):
+                for name, deps in extract_mod(
+                        filename[:-3], text_(f.read()), p):
                     mods.append((name, p, JS_MOD))
         if filename.endswith('.css'):
             mods.append((filename, p, CSS_MOD))
@@ -201,10 +205,10 @@ def add_amd_dir(cfg, path):
     for name, p, mod in sorted(mods):
         if mod == JS_MOD:
             add_js_module(cfg, name, p)
-            log.info("Add js module: %s path:%s"%(name, p))
+            log.info("Add js module: %s path:%s" % (name, p))
         elif mod == CSS_MOD:
             add_css_module(cfg, name, p)
-            log.info("Add css module: %s path:%s"%(name, p))
+            log.info("Add css module: %s path:%s" % (name, p))
 
     return directory
 
@@ -227,7 +231,7 @@ def build_md5(request, specname):
         specstorage = request.registry[ID_AMD_SPEC]
         specdata = specstorage.get(specname)
 
-        initfile = '%s-init'%specname
+        initfile = '%s-init' % specname
         if specdata and cfg['amd.enabled'] and initfile in specstorage:
             with open(specstorage[initfile], 'r') as f:
                 line = f.readline()
@@ -267,14 +271,14 @@ def build_init(request, specname, extra=()):
                 url = request.static_url(
                     info['path'], _query={'_v': info['md5']})
             else:
-                url = '%s'%request.static_url(path)
+                url = '%s' % request.static_url(path)
                 if 'md5' in intr:
-                    url = '%s?_v=%s'%(url, intr['md5'])
+                    url = '%s?_v=%s' % (url, intr['md5'])
 
             if url.startswith(app_url):
                 url = url[app_url_len:]
 
-            js.append('"%s": "%s"'%(name, url))
+            js.append('"%s": "%s"' % (name, url))
 
     # list handlebars bundles, in case if bundle is part of spec
     for name, url in list_bundles(request):
@@ -285,10 +289,10 @@ def build_init(request, specname, extra=()):
         if url.startswith(app_url):
             url = url[app_url_len:]
 
-        js.append('"%s":"%s"'%(name, url))
+        js.append('"%s":"%s"' % (name, url))
 
     with open(CURL_PATH, 'r') as f:
-        return text_type(AMD_INIT_TMPL%{
+        return text_type(AMD_INIT_TMPL % {
             'curl': f.read(), 'mods': ',\n'.join(sorted(js))})
 
 
@@ -300,7 +304,7 @@ def amd_init(request, **kw):
     specdata = specstorage.get(specname)
     cache_max_age = 31536000 if request.params.get('_v') else None
 
-    initfile = '%s-init'%specname
+    initfile = '%s-init' % specname
     if specdata and cfg['amd.enabled'] and initfile in specstorage:
         return FileResponse(specstorage[initfile], request, cache_max_age)
 
@@ -327,30 +331,30 @@ def request_amd_init(request, spec='', bundles=()):
         specstorage = reg[ID_AMD_SPEC]
         specdata = specstorage.get(spec)
         if specdata is None:
-            raise RuntimeError("Spec '%s' is not found."%spec)
+            raise RuntimeError("Spec '%s' is not found." % spec)
     else:
         spec = '_'
         specdata = ()
 
     if spec != '_':
-        initfile = '%s-init'%spec
+        initfile = '%s-init' % spec
         c_tmpls.append(
-            '<script src="%s"> </script>'%(
+            '<script src="%s"> </script>' % (
                 request.static_url(
                     specstorage[initfile],
                     _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
     else:
         c_tmpls.append(
-            '<script src="%s"> </script>'%(
+            '<script src="%s"> </script>' % (
                 request.route_url(
                     'pyramid-amd-init', specname=spec,
                     _query={'_v': reg[ID_AMD_BUILD_MD5](request, spec)})))
 
     for name in (bundles if not isinstance(bundles, str) else (bundles,)):
-        name = '%s.js'%name
+        name = '%s.js' % name
         if name in specdata:
             c_tmpls.append(
-                '<script src="%s"></script>'%
+                '<script src="%s"></script>' %
                 request.static_url(specdata[name]['path']))
 
     return '\n'.join(c_tmpls)
@@ -360,14 +364,15 @@ def request_includes(request, js=(), css=()):
     if isinstance(js, string_types):
         js = (js,)
 
-    mods = ["'%s'"%c for c in js]
+    mods = ["'%s'" % c for c in js]
 
     if isinstance(css, string_types):
         css = (css,)
 
-    mods.extend("'css!%s.css'"%c for c in css)
+    mods.extend("'css!%s.css'" % c for c in css)
 
-    return ('<script type="text/javascript">curl({paths:pyramid_amd_modules},[%s])</script>' %
+    return ('<script type="text/javascript">'
+            'curl({paths:pyramid_amd_modules},[%s])</script>' %
             ','.join(mods))
 
 
@@ -375,5 +380,6 @@ def request_css_includes(request, css=()):
     if isinstance(css, string_types):
         css = (css,)
 
-    return ('<script type="text/javascript">curl({paths:pyramid_amd_modules},[%s])</script>' %
-            ','.join("'css!%s'"%c for c in css))
+    return ('<script type="text/javascript">'
+            'curl({paths:pyramid_amd_modules},[%s])</script>' %
+            ','.join("'css!%s'" % c for c in css))

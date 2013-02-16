@@ -33,7 +33,7 @@ class TestAmdDirective(BaseTestCase):
         path = amd.RESOLVER.resolve('pyramid_amdjs:tests/dir/').abspath()
 
         self.assertEqual(
-            [('pyramid_amdjs:tests/dir/',path)],
+            [('pyramid_amdjs:tests/dir/', path)],
             self.registry.settings['amd.debug.data']['paths'])
 
 
@@ -63,9 +63,11 @@ class TestBuildInit(BaseTestCase):
 
         mods = m_amd.build_init.call_args[0][2]
         self.assertIn(
-            '"test3.css": "/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"',
+            '"test3.css": '
+            '"/_tests/test3.css?_v=6305443b362b239fad70ffc6d59c98df"',
             mods)
 
         self.assertIn(
-            '"jca-globals": "/_tests/test.js?_v=4ce2ec81952ee8e6d0058334361babbe"',
+            '"jca-globals": '
+            '"/_tests/test.js?_v=4ce2ec81952ee8e6d0058334361babbe"',
             mods)

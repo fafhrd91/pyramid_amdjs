@@ -25,7 +25,8 @@ HB = AssetResolver().resolve(
 ext_handlebars = ('.mustache', '.hb')
 
 
-def register_handlebars_bundle(cfg, name,path='',description='',i18n_domain=''):
+def register_handlebars_bundle(
+        cfg, name, path='', description='', i18n_domain=''):
     """ Register handlebars bundle;
 
     :param name: module name
@@ -38,7 +39,7 @@ def register_handlebars_bundle(cfg, name,path='',description='',i18n_domain=''):
     d = resolver.resolve(path).abspath()
 
     if not os.path.isdir(d):
-        raise ConfigurationError("Directory is required: %s"%path)
+        raise ConfigurationError("Directory is required: %s" % path)
 
     discr = (ID_AMD_MODULE, name)
 
@@ -46,7 +47,7 @@ def register_handlebars_bundle(cfg, name,path='',description='',i18n_domain=''):
     abs_path = resolver.resolve(path).abspath()
 
     if not path or not os.path.isdir(abs_path):
-        raise ConfigurationError("Directory is required: %s"%path)
+        raise ConfigurationError("Directory is required: %s" % path)
 
     intr = Introspectable(ID_AMD_MODULE, discr, name, ID_AMD_MODULE)
     intr['name'] = name
@@ -66,24 +67,25 @@ def compile_template(name, path, node_path, cache_dir):
 
     dir, tname = os.path.split(path)
     tname = os.path.join(
-        cache_dir, '%s-%s-%s'%(name, os.path.split(dir)[-1], tname))
+        cache_dir, '%s-%s-%s' % (name, os.path.split(dir)[-1], tname))
 
     # copy to temp dir
-    if not os.path.exists(tname) or \
-       (os.path.getmtime(path) > os.path.getmtime(tname)):
+    if ((not os.path.exists(tname) or
+         (os.path.getmtime(path) > os.path.getmtime(tname)))):
+
         shutil.copyfile(path, tname)
 
     i18n = []
 
     # check if .js file exists
     if node_path:
-        cname = '%s.js'%tname
+        cname = '%s.js' % tname
     else:
-        cname = '%s.pre'%tname
+        cname = '%s.pre' % tname
 
-    iname = '%s.i18n'%tname
-    if os.path.exists(cname) and \
-           (os.path.getmtime(tname) <= os.path.getmtime(cname)):
+    iname = '%s.i18n' % tname
+    if (os.path.exists(cname) and
+            (os.path.getmtime(tname) <= os.path.getmtime(cname))):
         with open(cname, 'rb') as f:
             tmpl = text_(f.read())
 
@@ -99,9 +101,9 @@ def compile_template(name, path, node_path, cache_dir):
             pos = 0
             for start, end, message in extract_i18n_str(data):
                 text.append(data[pos:start])
-                text.append('{{#i18n-%s}}'%name)
+                text.append('{{#i18n-%s}}' % name)
                 text.append(message)
-                text.append('{{/i18n-%s}}'%name)
+                text.append('{{/i18n-%s}}' % name)
                 pos = end
                 i18n.append(message)
 
@@ -120,7 +122,7 @@ def compile_template(name, path, node_path, cache_dir):
             tmpl = check_output((node_path, HB, '-s', tname))
             if tmpl is None:
                 tmpl = b''
-                log.error('Compilation is failed: %s'%path)
+                log.error('Compilation is failed: %s' % path)
 
         with open(cname, 'wb') as f:
             f.write(tmpl)
@@ -133,8 +135,11 @@ function(templates, Handlebars) {
 var bundle=%s;templates.bundles["%s"]=bundle;%sreturn bundle})
 """)
 
-i18n_template = text_type("""\nHandlebars.registerHelper('%s',function(context, options) {return templates.i18n(bundle, this, context, options)});
-bundle.__i18n__ = %s;""")
+i18n_template = text_type(
+    "\nHandlebars.registerHelper('%s',function(context, options) "
+    "{return templates.i18n(bundle, this, context, options)});\n"
+    "bundle.__i18n__ = %s;")
+
 
 class _r(object):
     def __init__(self, registry, locale):
@@ -167,9 +172,12 @@ def build_hb_bundle(name, intr, registry):
         if not os.path.isdir(bdir):
             if bname.endswith(ext_handlebars) and bname[0] not in ('.#~'):
                 fname = os.path.join(path, bname)
-                tmpl, _i18n = compile_template(name,fname,node_path,cache_dir)
+                tmpl, _i18n = compile_template(
+                    name, fname, node_path, cache_dir)
+
                 if tmpl:
                     top.append((bname.rsplit('.', 1)[0], tmpl))
+
                 if _i18n:
                     i18n.update(dict((v, None) for v in _i18n))
         else:
@@ -186,29 +194,29 @@ def build_hb_bundle(name, intr, registry):
 
             if node_path:
                 hb_tmpls = (
-                    text_type('"%s":Handlebars.template(%s)')%(
+                    text_type('"%s":Handlebars.template(%s)') % (
                         name, tmpl) for name, tmpl in hb_tmpls)
             else:
                 hb_tmpls = (
-                    text_type('"%s":Handlebars.compile(%s)')%(
+                    text_type('"%s":Handlebars.compile(%s)') % (
                         name, json.dumps(tmpl)) for name, tmpl in hb_tmpls)
 
             templates.append(
-                text_type('"%s":new templates.Bundle("%s",{%s})')%(
+                text_type('"%s":new templates.Bundle("%s",{%s})') % (
                     bname, bname, ','.join(hb_tmpls)))
 
     if top:
         if node_path:
-            top = (text_type('"%s":Handlebars.template(%s)')%(
+            top = (text_type('"%s":Handlebars.template(%s)') % (
                 name, tmpl) for name, tmpl in top)
         else:
-            top = (text_type('"%s":Handlebars.compile(%s)')%(
+            top = (text_type('"%s":Handlebars.compile(%s)') % (
                 name, json.dumps(tmpl)) for name, tmpl in top)
 
-        tmpl = text_type('new templates.Bundle("%s",{%s},{%s})')%(
+        tmpl = text_type('new templates.Bundle("%s",{%s},{%s})') % (
             name, text_type(',\n').join(top), text_type(',\n').join(templates))
     else:
-        tmpl = text_type('{%s}')%(text_type(',\n').join(templates))
+        tmpl = text_type('{%s}') % (text_type(',\n').join(templates))
 
     name = str(name)
 
@@ -217,17 +225,16 @@ def build_hb_bundle(name, intr, registry):
         for lang in cfg['amd.tmpl-langs']:
             localizer = get_localizer(_r(registry, lang))
             for t, data in i18n.items():
-                r = localizer.translate(t,i18n_domain)
+                r = localizer.translate(t, i18n_domain)
                 if t != r:
                     if t not in i18n_data:
                         i18n_data[t] = {}
                     i18n_data[t][lang] = r
 
-
-        i18n_tmpl = i18n_template%('i18n-%s'%name, json.dumps(i18n_data))
-        res = template%(name, tmpl, name, i18n_tmpl)
+        i18n_tmpl = i18n_template % ('i18n-%s' % name, json.dumps(i18n_data))
+        res = template % (name, tmpl, name, i18n_tmpl)
     else:
-        res = template%(name, tmpl, name, '')
+        res = template % (name, tmpl, name, '')
 
     res = text_(res, 'utf-8')
 
@@ -282,7 +289,7 @@ def extract_i18n_str(text):
             last = text.find('{{/i18n}}', first)
             if last >= 0:
                 pos = last + 9
-                messages.append((first, pos, text[first+9:last]))
+                messages.append((first, pos, text[first + 9:last]))
                 first = last = -1
                 continue
         break

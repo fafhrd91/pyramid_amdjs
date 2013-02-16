@@ -93,7 +93,7 @@ class TestAmdjsTween(BaseTestCase):
             self.request.require_js(*self.js)
         if self.css:
             self.request.require_js(*self.js)
-        for r,fn in self.fn:
+        for r, fn in self.fn:
             self.request.require_fn(r, fn)
 
         if self.spec:
@@ -140,8 +140,8 @@ class TestAmdjsTween(BaseTestCase):
         self.assertIn(
             '<script src="http://example.com/_amd__.js', res)
         self.assertIn(
-            """<script type="text/javascript">curl({paths:pyramid_amd_modules},['mod1','mod2'])</script>""",
-            res)
+            '<script type="text/javascript">curl({paths:pyramid_amd_modules},'
+            "['mod1','mod2'])</script>", res)
         self.assertIn(
             "curl(['jquery'], function($){})", res)
 
@@ -156,12 +156,12 @@ class TestAmdjsTween(BaseTestCase):
     def test_tween_spec(self):
         self.registry.settings['amd.enabled'] = True
         self.registry.settings['amd.spec-dir'] = RESOLVER.resolve(
-                'pyramid_amdjs:tests/dir/').abspath()
+            'pyramid_amdjs:tests/dir/').abspath()
         self.registry.settings['amd.spec'] = [('test', 'test.js')]
         init_amd_spec(self.config)
 
         self.registry[ID_AMD_SPEC] = {
-            'test': {'test.js': {'path':'/test/test.js'}},
+            'test': {'test.js': {'path': '/test/test.js'}},
             'test-init': RESOLVER.resolve(
                 'pyramid_amdjs:tests/dir/test2.js').abspath()}
 
@@ -175,7 +175,7 @@ class TestAmdjsTween(BaseTestCase):
         self.assertIn(
             '<script src="http://example.com/_amdjs/bundles/test2.js', res)
         self.assertIn(
-            """<script type="text/javascript">curl({paths:pyramid_amd_modules},['mod1','mod2'])</script>""",
-            res)
+            '<script type="text/javascript">curl({paths:pyramid_amd_modules},'
+            "['mod1','mod2'])</script>", res)
         self.assertIn(
             "curl(['jquery'], function($){})", res)

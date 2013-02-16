@@ -35,7 +35,7 @@ def includeme(cfg):
         settings['static.rewrite'] = False
     else:
         if not settings['static.url'].endswith('/'):
-            settings['static.url'] = '%s/'%settings['static.url']
+            settings['static.url'] = '%s/' % settings['static.url']
 
     # spec settings
     specs = []

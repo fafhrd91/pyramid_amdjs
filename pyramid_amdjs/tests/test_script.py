@@ -1,5 +1,6 @@
 import mock
-import os, shutil
+import os
+import shutil
 import sys
 import tempfile
 from pyramid.compat import NativeIO
@@ -13,7 +14,8 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_no_params(self, m_bs):
-        m_bs.return_value = {'registry': self.registry, 'request': self.request}
+        m_bs.return_value = {
+            'registry': self.registry, 'request': self.request}
 
         sys.argv[:] = ['amdjs', 'pyramid_amdjs.ini']
 
@@ -30,7 +32,8 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_list_modules(self, m_bs):
-        m_bs.return_value = {'registry': self.registry, 'request': self.request}
+        m_bs.return_value = {
+            'registry': self.registry, 'request': self.request}
 
         self.config.add_amd_js(
             'test', 'pyramid_amdjs:tests/dir/test.js', 'Test module')
@@ -52,7 +55,8 @@ class TestAmdCommand(BaseTestCase):
     @mock.patch('pyramid_amdjs.script.build_init')
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_build_bundle(self, m_bs, m_binit):
-        m_bs.return_value = {'registry': self.registry, 'request': self.request}
+        m_bs.return_value = {'registry': self.registry,
+                             'request': self.request}
         m_binit.return_value = '123'
 
         self.config.add_amd_js(
@@ -83,7 +87,8 @@ class TestAmdCommand(BaseTestCase):
         sys.stdout = stdout
         val = out.getvalue()
 
-        self.assertIn('Destination directory is not specified in .ini file',val)
+        self.assertIn(
+            'Destination directory is not specified in .ini file', val)
 
         d = tempfile.mkdtemp()
         cfg['amd.spec-dir'] = d
@@ -94,7 +99,7 @@ class TestAmdCommand(BaseTestCase):
         sys.stdout = stdout
         val = out.getvalue()
 
-        self.assertIn('Processing: main (pyramid_amdjs:tests/amd.spec)',val)
+        self.assertIn('Processing: main (pyramid_amdjs:tests/amd.spec)', val)
         self.assertIn("""
 * bundle.js
     test: pyramid_amdjs:tests/dir/test.js
@@ -116,7 +121,7 @@ class TestAmdCommand(BaseTestCase):
         sys.stdout = stdout
         val = out.getvalue()
 
-        self.assertIn('Processing: main (pyramid_amdjs:tests/amd.spec)',val)
+        self.assertIn('Processing: main (pyramid_amdjs:tests/amd.spec)', val)
         self.assertIn("""
 * bundle.js
     test: pyramid_amdjs:tests/dir/test.js
@@ -127,7 +132,8 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_extract_deps(self, m_bs):
-        m_bs.return_value = {'registry': self.registry, 'request': self.request}
+        m_bs.return_value = {'registry': self.registry,
+                             'request': self.request}
         sys.argv[1:] = ['-b', '--no-min', 'pyramid_amdjs.ini']
 
         args = amd.AmdjsCommand.parser.parse_args()
@@ -143,7 +149,8 @@ class TestAmdCommand(BaseTestCase):
 
     @mock.patch('pyramid_amdjs.script.bootstrap')
     def test_build_tree(self, m_bs):
-        m_bs.return_value = {'registry': self.registry, 'request': self.request}
+        m_bs.return_value = {'registry': self.registry,
+                             'request': self.request}
         sys.argv[1:] = ['--deps', 'pyramid_amdjs.ini']
 
         self.registry[ID_AMD_MODULE] = {

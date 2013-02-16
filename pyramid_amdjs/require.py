@@ -23,11 +23,11 @@ def amdjs_tween_factory(handler, registry):
         response = handler(request)
 
         if ('amdjs_data' in request.__dict__ and
-            request.amdjs_data['init'] and
-            response.content_type == 'text/html' and
-            response.status_code == 200 and
-            response.content_length != 0 and
-            response.headers.get('Transfer-Encoding', '') != 'chunked'):
+                request.amdjs_data['init'] and
+                response.content_type == 'text/html' and
+                response.status_code == 200 and
+                response.content_length != 0 and
+                response.headers.get('Transfer-Encoding', '') != 'chunked'):
 
             data = request.amdjs_data
             response._amdjs_inititalized = True
@@ -40,21 +40,21 @@ def amdjs_tween_factory(handler, registry):
                     spec = '_'
 
             if enabled and spec not in ('', '_'):
-                initfile = '%s-init'%spec
+                initfile = '%s-init' % spec
                 c_tmpls = [
-                    '\n<script src="%s"> </script>'%(
+                    '\n<script src="%s"> </script>' % (
                         request.static_url(
                             specstorage[initfile],
                             _query={'_v': build_md5(request, spec)}))]
             else:
                 c_tmpls = [
-                    '\n<script src="%s"> </script>'%(
+                    '\n<script src="%s"> </script>' % (
                         request.route_url(
                             'pyramid-amd-init', specname='_',
                             _query={'_v': build_md5(request, '_')}))]
 
-            mods = ["'%s'"%m for m in data['js']]
-            mods.extend("'css!%s'"%c for c in data['css'])
+            mods = ["'%s'" % m for m in data['js']]
+            mods.extend("'css!%s'" % c for c in data['css'])
 
             if mods:
                 c_tmpls.append(
@@ -64,13 +64,13 @@ def amdjs_tween_factory(handler, registry):
 
             if data['fn']:
                 c_tmpls.append(
-                    '<script type="text/javascript">\n%s</script>'%
+                    '<script type="text/javascript">\n%s</script>' %
                     ';\n'.join(data['fn']))
 
             text = response.text
             pos = text.find('</body>')
             if pos:
-                response.text = '%s%s\n%s'%(
+                response.text = '%s%s\n%s' % (
                     text[:pos], '\n'.join(c_tmpls), text[pos:])
 
         return response
@@ -100,7 +100,7 @@ def require_fn(request, require, fn):
     request.amdjs_data['init'] = True
 
     request.amdjs_data['fn'].append(
-        'curl([%s], %s)'%(','.join("'%s'"%s for s in require), fn))
+        'curl([%s], %s)' % (','.join("'%s'" % s for s in require), fn))
 
 
 def require_spec(request, spec):

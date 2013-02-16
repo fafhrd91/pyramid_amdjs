@@ -78,9 +78,9 @@ class AmdjsCommand(object):
                     p2 = text.find('function(')
                     if p2 >= 0:
                         chunk = ''.join(ch.strip()
-                                        for ch in text[p1+7:p2].split())
+                                        for ch in text[p1 + 7:p2].split())
                         if chunk.startswith("'"):
-                            chunk = chunk.split(',',1)[-1]
+                            chunk = chunk.split(',', 1)[-1]
                         deps = [d for d in
                                 ''.join(ch for ch in chunk
                                         if ch not in "\"'[]").split(',')
@@ -95,11 +95,11 @@ class AmdjsCommand(object):
         mods = self.registry.get(ID_AMD_MODULE)
         specs = self.registry.get(ID_AMD_SPEC)
         if not specs:
-            print ("No specs found")
+            print("No specs found")
             return
 
         for spec, names in specs.items():
-            print(grpTitleWrap.fill('Spec: %s'%spec))
+            print(grpTitleWrap.fill('Spec: %s' % spec))
 
             tree = []
             seen = set()
@@ -129,9 +129,9 @@ class AmdjsCommand(object):
     def list_amd_mods(self):
         print()
         for name, intr in sorted(self.registry.get(ID_AMD_MODULE).items()):
-            print(grpTitleWrap.fill('%s: %s'%(name, intr['path'])))
+            print(grpTitleWrap.fill('%s: %s' % (name, intr['path'])))
             desc = grpDescriptionWrap.fill(intr['description'])
-            print (desc)
+            print(desc)
             if desc:
                 print()
 
@@ -143,15 +143,15 @@ class AmdjsCommand(object):
             node_path = NODE_PATH
 
         if not node_path:
-            print ("Can't find nodejs")
+            print("Can't find nodejs")
             return
 
         if not cfg['amd.spec']:
-            print ("Spec files are not specified in .ini file")
+            print("Spec files are not specified in .ini file")
             return
 
         if not cfg['amd.spec-dir']:
-            print ("Destination directory is not specified in .ini file")
+            print("Destination directory is not specified in .ini file")
             return
 
         storage = self.registry.get(ID_AMD_MODULE)
@@ -165,7 +165,7 @@ class AmdjsCommand(object):
 
         specs = OrderedDict(cfg['amd.spec'])
         for spec, specfile in specs.items():
-            print("\n\nProcessing: %s (%s)"%(spec, specfile))
+            print("\n\nProcessing: %s (%s)" % (spec, specfile))
 
             f = resolver.resolve(specfile).abspath()
             parser = configparser.SafeConfigParser()
@@ -177,10 +177,11 @@ class AmdjsCommand(object):
                 md5 = hashlib.md5()
                 md5.update(text.encode('utf-8'))
 
-                text = "var __file_hash__ = '||%s||';\n%s"%(
+                text = "var __file_hash__ = '||%s||';\n%s" % (
                     md5.hexdigest(), text)
 
-                initpath = os.path.join(cfg['amd.spec-dir'], 'init-%s.js'%spec)
+                initpath = os.path.join(
+                    cfg['amd.spec-dir'], 'init-%s.js' % spec)
                 with open(initpath, 'w') as dest:
                     dest.write(text)
 
@@ -214,7 +215,7 @@ class AmdjsCommand(object):
 
                     intr = storage.get(module)
                     if not intr:
-                        print ("Can't find module '%s'"%module)
+                        print("Can't find module '%s'" % module)
                         continue
 
                     processed.append(module)
@@ -223,13 +224,13 @@ class AmdjsCommand(object):
 
                 _, tpath = tempfile.mkstemp()
 
-                print ('')
-                print (grpTitleWrap.fill(jsname))
+                print('')
+                print(grpTitleWrap.fill(jsname))
 
                 f = open(tpath, 'ab')
                 for name, path, fpath in js:
                     print(grpDescriptionWrap.fill(
-                            '%s: %s'%(name, path or 'templates bundle')))
+                        '%s: %s' % (name, path or 'templates bundle')))
 
                     if path is None:
                         f.write(bytes_(fpath, 'utf8'))
@@ -242,12 +243,12 @@ class AmdjsCommand(object):
                 f.close()
 
                 path = os.path.join(cfg['amd.spec-dir'], jsname)
-                print ('write to:', path)
+                print('write to:', path)
                 with open(path, 'wb') as dest:
                     if self.options.nomin:
                         dest.write(open(tpath, 'rb').read())
                     else:
-                        js = check_output((NODE_PATH,UGLIFY,'-nc',tpath))
+                        js = check_output((NODE_PATH, UGLIFY, '-nc', tpath))
                         dest.write(js)
 
                 os.unlink(tpath)
@@ -257,7 +258,8 @@ class AmdjsCommand(object):
                 if name not in processed:
                     notprocessed.append((name, path))
 
-            if spec in ('','main') and notprocessed:
-                print ("\n\nList of not processed modules:")
+            if spec in ('', 'main') and notprocessed:
+                print("\n\nList of not processed modules:")
                 for name, intr, in sorted(notprocessed):
-                    print(grpDescriptionWrap.fill('%s: %s'%(name,intr['path'])))
+                    print(grpDescriptionWrap.fill(
+                        '%s: %s' % (name, intr['path'])))

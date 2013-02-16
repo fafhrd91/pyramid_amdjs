@@ -1,6 +1,9 @@
 import mock
 import unittest
-import os, tempfile, shutil, time
+import os
+import tempfile
+import shutil
+import time
 from pyramid.compat import text_type, NativeIO
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError, ConfigurationConflictError
@@ -26,7 +29,8 @@ class TestBundleDirective(BaseTestCase):
 
         text = amd.build_init(self.request, '_')
         self.assertIn(
-            '"handlebars": "/_amdjs/static/lib/handlebars.runtime.js?_v=', text)
+            '"handlebars": '
+            '"/_amdjs/static/lib/handlebars.runtime.js?_v=', text)
 
 
 class TestBundleReg(BaseTestCase):
@@ -37,7 +41,8 @@ class TestBundleReg(BaseTestCase):
         from pyramid_amdjs.handlebars import ID_BUNDLE
 
         self.config.add_handlebars_bundle(
-            'test-bundle', 'pyramid_amdjs:tests/bundle/', i18n_domain='pyramid')
+            'test-bundle', 'pyramid_amdjs:tests/bundle/',
+            i18n_domain='pyramid')
         self.config.commit()
 
         data = self.registry.get(ID_BUNDLE)
@@ -139,16 +144,17 @@ class TestBundleRoute(BaseTestCase):
         self.request.matchdict['specname'] = '_'
 
         res = amd_init(self.request)
-        self.assertIn('"test-bundle":"/_handlebars/test-bundle.js?_v=',res.text)
+        self.assertIn(
+            '"test-bundle":"/_handlebars/test-bundle.js?_v=', res.text)
 
     def test_bundles_amd_spec(self):
         from pyramid_amdjs.amd import amd_init, ID_AMD_SPEC
 
         self.registry[ID_AMD_SPEC] = {
             'test': {'test-bundle':
-                     {'name':'bundle',
+                     {'name': 'bundle',
                       'md5': '123',
-                      'path':'pyramid_amdjs:static/example.js'}}
+                      'path': 'pyramid_amdjs:static/example.js'}}
         }
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle/')
@@ -189,7 +195,7 @@ class TestBundleRoute(BaseTestCase):
         from pyramid_amdjs.handlebars import bundle_view
 
         cfg = self.registry.settings
-        cfg['amd.tmpl-langs'] = ['en','pt_BR']
+        cfg['amd.tmpl-langs'] = ['en', 'pt_BR']
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle2/',
@@ -218,7 +224,7 @@ class TestBundleRoute(BaseTestCase):
         from pyramid_amdjs.handlebars import bundle_view
 
         cfg = self.registry.settings
-        cfg['amd.tmpl-langs'] = ['en','pt_BR']
+        cfg['amd.tmpl-langs'] = ['en', 'pt_BR']
 
         self.config.add_handlebars_bundle(
             'test-bundle', 'pyramid_amdjs:tests/bundle2/',
@@ -238,8 +244,8 @@ class TestBundleRoute(BaseTestCase):
         self.assertIn(
             "Handlebars.registerHelper('i18n-test-bundle'", res.text)
         self.assertIn(
-            'var bundle=new templates.Bundle("test-bundle",{"form":Handlebars.compile(',
-            res.text)
+            'var bundle=new templates.Bundle("test-bundle",'
+            '{"form":Handlebars.compile(', res.text)
         self.assertIn(
             'bundle.__i18n__ = {"Password": {"pt_BR": "Senha"}}', res.text)
 
@@ -271,9 +277,9 @@ class TestBuildBundle(BaseTestCase):
             'test', f, handlebars.compat.NODE_PATH, self.path)[0])
 
         self.assertTrue(os.path.isfile(
-                os.path.join(self.path, 'test-%s-template'%prefix)))
+            os.path.join(self.path, 'test-%s-template' % prefix)))
         self.assertTrue(os.path.isfile(
-                os.path.join(self.path, 'test-%s-template.js'%prefix)))
+            os.path.join(self.path, 'test-%s-template.js' % prefix)))
         self.assertIn(
             'function (Handlebars,depth0,helpers,partials,data) {', tmpl)
 
@@ -291,9 +297,9 @@ class TestBuildBundle(BaseTestCase):
             'test', f, None, self.path)[0])
 
         self.assertTrue(os.path.isfile(
-                os.path.join(self.path, 'test-%s-template'%prefix)))
+            os.path.join(self.path, 'test-%s-template' % prefix)))
         self.assertTrue(os.path.isfile(
-                os.path.join(self.path, 'test-%s-template.pre'%prefix)))
+            os.path.join(self.path, 'test-%s-template.pre' % prefix)))
         self.assertIn('<div>{{test}}</div>', tmpl)
 
     def test_compile_new_i18n(self):
@@ -312,9 +318,10 @@ class TestBuildBundle(BaseTestCase):
 
         self.assertIn('i18n text', i18n)
         self.assertTrue(os.path.isfile(
-            os.path.join(self.path, 'test-%s-template.i18n'%prefix)))
+            os.path.join(self.path, 'test-%s-template.i18n' % prefix)))
         self.assertEqual(
-            open(os.path.join(self.path,'test-%s-template'%prefix),'r').read(),
+            open(os.path.join(
+                self.path, 'test-%s-template' % prefix), 'r').read(),
             '<div>{{test}}{{#i18n-test}}i18n text{{/i18n-test}}</div>')
 
     def test_compile_existing(self):
@@ -329,13 +336,13 @@ class TestBuildBundle(BaseTestCase):
 
         time.sleep(0.01)
 
-        f1 = os.path.join(self.path, 'test-%s-template'%prefix)
+        f1 = os.path.join(self.path, 'test-%s-template' % prefix)
         with open(f1, 'w') as fn:
             fn.write('existing1')
 
         time.sleep(0.01)
 
-        f2 = os.path.join(self.path, 'test-%s-template.js'%prefix)
+        f2 = os.path.join(self.path, 'test-%s-template.js' % prefix)
         with open(f2, 'w') as fn:
             fn.write('existing2')
 
@@ -359,23 +366,23 @@ class TestBuildBundle(BaseTestCase):
 
         time.sleep(0.01)
 
-        f1 = os.path.join(self.path, 'test-%s-template'%prefix)
+        f1 = os.path.join(self.path, 'test-%s-template' % prefix)
         with open(f1, 'w') as fn:
             fn.write('existing1')
 
         time.sleep(0.01)
 
-        f2 = os.path.join(self.path, 'test-%s-template.js'%prefix)
+        f2 = os.path.join(self.path, 'test-%s-template.js' % prefix)
         with open(f2, 'w') as fn:
             fn.write('existing2')
 
         time.sleep(0.01)
 
-        f1 = os.path.join(self.path, 'test-%s-template.i18n'%prefix)
+        f1 = os.path.join(self.path, 'test-%s-template.i18n' % prefix)
         with open(f1, 'w') as fn:
             fn.write('["existing3"]')
 
-        tmpl,i18n = handlebars.compile_template(
+        tmpl, i18n = handlebars.compile_template(
             'test', f, handlebars.compat.NODE_PATH, self.path)
 
         self.assertEqual(['existing3'], i18n)
