@@ -16,6 +16,8 @@ from .compat import json, check_output
 
 log = logging.getLogger('pyramid_amdjs')
 
+VER = b'1.0.0-rc.3'
+VERSION = VER.decode()
 ID_BUNDLE = 'pyramid_amdjs:handlebars'
 ID_AMD_MODULE = 'pyramid_amdjs:amd-module'
 
@@ -79,7 +81,7 @@ def compile_template(name, path, node_path, cache_dir):
 
     # check if .js file exists
     if node_path:
-        cname = '%s.js' % tname
+        cname = '%s.js.%s' % (tname, VERSION)
     else:
         cname = '%s.pre' % tname
 

@@ -279,7 +279,10 @@ class TestBuildBundle(BaseTestCase):
         self.assertTrue(os.path.isfile(
             os.path.join(self.path, 'test-%s-template' % prefix)))
         self.assertTrue(os.path.isfile(
-            os.path.join(self.path, 'test-%s-template.js' % prefix)))
+            os.path.join(
+                self.path,
+                'test-%s-template.js.%s' % (prefix, handlebars.VERSION))))
+
         self.assertIn(
             'function (Handlebars,depth0,helpers,partials,data) {', tmpl)
 
@@ -342,7 +345,8 @@ class TestBuildBundle(BaseTestCase):
 
         time.sleep(0.01)
 
-        f2 = os.path.join(self.path, 'test-%s-template.js' % prefix)
+        f2 = os.path.join(
+            self.path, 'test-%s-template.js.%s' % (prefix, handlebars.VERSION))
         with open(f2, 'w') as fn:
             fn.write('existing2')
 
@@ -372,7 +376,9 @@ class TestBuildBundle(BaseTestCase):
 
         time.sleep(0.01)
 
-        f2 = os.path.join(self.path, 'test-%s-template.js' % prefix)
+        f2 = os.path.join(
+            self.path, 'test-%s-template.js.%s' % (prefix, handlebars.VERSION))
+
         with open(f2, 'w') as fn:
             fn.write('existing2')
 

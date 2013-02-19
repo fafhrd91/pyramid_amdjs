@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.5.4 (02-19-2013)
+------------------
+
+- Upgrade handlebars compiler
+
+
 0.5.3 (02-15-2013)
 ------------------
 
@@ -9,7 +15,7 @@ CHANGES
 
 - JQuery - 1.9.1
 
-- Handlebars - 1.0.0.rc3
+- Handlebars - 1.0.0.rc.3
 
 
 0.5.2 (01-18-2013)
