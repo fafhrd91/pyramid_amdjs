@@ -38,18 +38,12 @@ def register_handlebars_bundle(
 
     """
     resolver = AssetResolver()
-    d = resolver.resolve(path).abspath()
-
-    if not os.path.isdir(d):
-        raise ConfigurationError("Directory is required: %s" % path)
-
-    discr = (ID_AMD_MODULE, name)
-
-    resolver = AssetResolver()
     abs_path = resolver.resolve(path).abspath()
 
     if not path or not os.path.isdir(abs_path):
         raise ConfigurationError("Directory is required: %s" % path)
+
+    discr = (ID_AMD_MODULE, name)
 
     intr = Introspectable(ID_AMD_MODULE, discr, name, ID_AMD_MODULE)
     intr['name'] = name

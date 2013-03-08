@@ -92,6 +92,16 @@ def includeme(cfg):
     cfg.add_route(
         'pyramid-hb-bundle', '/_handlebars/{name}.js')
 
+    # less bundle
+    from .less import register_less_bundle, less_bundle_url
+
+    cfg.add_directive(
+        'add_less_bundle', register_less_bundle)
+    cfg.add_route(
+        'pyramid-less-bundle', '/_amd_less/{name}')
+
+    cfg.add_request_method(less_bundle_url, 'less_bundle_url')
+
     # scan
     cfg.scan('pyramid_amdjs')
     cfg.include('pyramid_amdjs.static')
