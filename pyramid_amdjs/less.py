@@ -97,7 +97,10 @@ def build_less_bundle(name, intr, registry):
     tpath = os.path.join(cache_dir, tname)
     if os.path.exists(tpath):
         # check for changes
-        if debug and files_changed(os.path.getmtime(tpath), intr['watchdir']):
+        if (('md5' not in intr and
+             files_changed(os.path.getmtime(tpath), intr['watchdir'])) or
+            (debug and 
+             files_changed(os.path.getmtime(tpath), intr['watchdir']))):
             log.info('Compiling less bundle: %s', name)
             bundle = compile_less(
                 name, intr['abs_path'], node_path, cache_dir, not debug)
