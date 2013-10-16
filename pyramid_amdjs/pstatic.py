@@ -65,4 +65,4 @@ class StaticURLInfo(StaticURLInfo):
             name = cfg['static.url'] + (
                 name[1:] if name.startswith('/') else name)
 
-        super(StaticURLInfo, self).add(config, name, spec, *extra)
+        super(StaticURLInfo, self).add(config, name, spec, **extra)
