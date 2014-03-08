@@ -40,6 +40,19 @@ def includeme(config):
         'pyramid_amdjs:static/bootstrap/bootstrap-responsive.min.css',
         'Twitter bootstrap javscript library (Responsive)')
 
+    # bootstrap3 http://getbootstrap.com
+    config.add_amd_js(
+        'bootstrap3', 'pyramid_amdjs:static/bootstrap3/js/bootstrap.min.js',
+        'Twitter bootstrap 3 javscript library', ('jquery',))
+    config.add_amd_css(
+        'bootstrap3-css',
+        'pyramid_amdjs:static/bootstrap3/css/bootstrap.min.css',
+        'Twitter bootstrap 3 javscript library')
+    config.add_amd_css(
+        'bootstrap3-theme-css',
+        'pyramid_amdjs:static/bootstrap3/css/bootstrap-theme.min.css',
+        'Twitter bootstrap javscript library (Theme)')
+
     # handlebars http://handlebarsjs.com/
     node_path = config.get_settings()['amd.node']
     if not node_path:
