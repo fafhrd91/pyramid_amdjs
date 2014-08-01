@@ -104,7 +104,6 @@ def includeme(cfg):
 
     # scan
     cfg.scan('pyramid_amdjs')
-    cfg.include('pyramid_amdjs.static')
 
     # init amd specs
     amd.init_amd_spec(cfg)
