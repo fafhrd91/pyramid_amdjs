@@ -24,6 +24,7 @@ class TestBundleDirective(BaseTestCase):
 
     def test_handlebars_mod(self):
         self.config.include('pyramid_amdjs')
+        self.config.include('pyramid_amdjs.static')
 
         from pyramid_amdjs import amd
 
