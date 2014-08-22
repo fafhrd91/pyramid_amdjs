@@ -54,6 +54,7 @@ class BaseTestCase(TestCase):
 
         if self._include:
             self.config.include('pyramid_amdjs')
+            self.config.include('pyramid_amdjs.static')
 
         def set_ext():
             self.request._set_extensions(
