@@ -35,7 +35,7 @@ def includeme(config):
     config.include('pyramid_amdjs.bootstrap')
 
     # handlebars http://handlebarsjs.com/
-    config.include('pyramid_amdjs.handlebars')
+    config.include('pyramid_amdjs.handlebarsjs')
 
     # pyramid
     config.include('pyramid_amdjs.pyramid')
