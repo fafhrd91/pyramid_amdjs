@@ -409,16 +409,16 @@ class TestExtractI18N(unittest.TestCase):
 class TestNoNodeJS(BaseTestCase):
 
     def setUp(self):
-        from pyramid_amdjs import static
-        self.node_path = static.NODE_PATH
+        from pyramid_amdjs import handlebarsjs
+        self.node_path = handlebarsjs.NODE_PATH
 
-        static.NODE_PATH = None
+        handlebarsjs.NODE_PATH = None
 
         super(TestNoNodeJS, self).setUp()
 
     def tearDown(self):
-        from pyramid_amdjs import static
-        static.NODE_PATH = self.node_path
+        from pyramid_amdjs import handlebarsjs
+        handlebarsjs.NODE_PATH = self.node_path
 
     def test_handlebars_mod(self):
         from pyramid_amdjs import amd
