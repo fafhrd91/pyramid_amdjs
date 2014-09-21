@@ -31,7 +31,7 @@ class TestBundleDirective(BaseTestCase):
         text = amd.build_init(self.request, '_')
         self.assertIn(
             '"handlebars": '
-            '"/_amdjs/static/lib/handlebars.runtime.js?_v=', text)
+            '"/_amdjs_handlebars/static/handlebars.runtime.js?_v=', text)
 
 
 class TestBundleReg(BaseTestCase):
@@ -425,4 +425,4 @@ class TestNoNodeJS(BaseTestCase):
 
         text = amd.build_init(self.request, '_')
         self.assertIn(
-            '"handlebars": "/_amdjs/static/lib/handlebars.js?_v=', text)
+            '"handlebars": "/_amdjs_handlebars/static/handlebars.js?_v=', text)

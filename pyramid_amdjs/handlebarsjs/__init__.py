@@ -5,7 +5,7 @@ def includeme(config):
     config.include('pyramid_amdjs')
 
     # static assets
-    config.add_static_view('_amdjs_handlebarsjs/static', 'pyramid_amdjs.handlebarsjs:static/')
+    config.add_static_view('_amdjs_handlebars/static', 'pyramid_amdjs.handlebarsjs:static/')
 
     node_path = config.get_settings()['amd.node']
     if not node_path:
