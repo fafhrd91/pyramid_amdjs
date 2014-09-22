@@ -4,28 +4,19 @@ from pyramid_amdjs.compat import NODE_PATH
 
 def includeme(config):
     # jquery http://jquery.org
-    config.add_amd_js(
-        'jquery', 'pyramid_amdjs:static/lib/jquery-1.9.1.min.js',
-        'JQuery Library')
-    config.add_amd_js(
-        'jquery19', 'pyramid_amdjs:static/lib/jquery-1.9.1.min.js',
-        'JQuery Library 1.9')
+    config.include('pyramid_amdjs.jquery')
 
     # backbone http://backbonejs.org
-    config.add_amd_js(
-        'backbone', 'pyramid_amdjs:static/lib/backbone-min.js')
+    config.include('pyramid_amdjs.backbone')
 
     # lodash https://github.com/amdjs/underscore
-    config.add_amd_js(
-        'underscore', 'pyramid_amdjs:static/lib/underscore-min.js')
+    config.include('pyramid_amdjs.underscore')
 
     # json2
-    config.add_amd_js(
-        'json2', 'pyramid_amdjs:static/lib/json2.js')
+    config.include('pyramid_amdjs.json2')
 
     # moment http://momentjs.com
-    config.add_amd_js(
-        'moment', 'pyramid_amdjs:static/lib/moment.min.js')
+    config.include('pyramid_amdjs.moment')
 
     # bootstrap http://twitter.github.com/bootstrap/
     config.add_amd_js(
@@ -40,44 +31,11 @@ def includeme(config):
         'pyramid_amdjs:static/bootstrap/bootstrap-responsive.min.css',
         'Twitter bootstrap javscript library (Responsive)')
 
-    # bootstrap3 http://getbootstrap.com
-    config.add_amd_js(
-        'bootstrap3', 'pyramid_amdjs:static/bootstrap3/js/bootstrap.min.js',
-        'Twitter bootstrap 3 javscript library', ('jquery',))
-    config.add_amd_css(
-        'bootstrap3-css',
-        'pyramid_amdjs:static/bootstrap3/css/bootstrap.min.css',
-        'Twitter bootstrap 3 javscript library')
-    config.add_amd_css(
-        'bootstrap3-theme-css',
-        'pyramid_amdjs:static/bootstrap3/css/bootstrap-theme.min.css',
-        'Twitter bootstrap javscript library (Theme)')
+    # bootstrap http://getbootstrap.com
+    config.include('pyramid_amdjs.bootstrap')
 
     # handlebars http://handlebarsjs.com/
-    node_path = config.get_settings()['amd.node']
-    if not node_path:
-        node_path = NODE_PATH
-
-    if not node_path:
-        config.add_amd_js(
-            'handlebars', 'pyramid_amdjs:static/lib/handlebars.js',
-            'Handlebars library')
-    else:
-        config.add_amd_js(
-            'handlebars', 'pyramid_amdjs:static/lib/handlebars.runtime.js',
-            'Handlebars runtime library')
+    config.include('pyramid_amdjs.handlebarsjs')
 
     # pyramid
-    config.add_amd_js(
-        'pyramid', 'pyramid_amdjs:static/pyramid.js',
-        'Pyramid amdjs', ('backbone',))
-
-    # handlebars support helper
-    config.add_amd_js(
-        'pyramid:templates', 'pyramid_amdjs:static/templates.js',
-        'Handlebars templates', ('handlebars',))
-
-    # handlebars datetime helper
-    config.add_amd_js(
-        'pyramid:datetime', 'pyramid_amdjs:static/datetime.js',
-        'Datetime handlebars helper', ('handlebars', 'moment'))
+    config.include('pyramid_amdjs.pyramidjs')

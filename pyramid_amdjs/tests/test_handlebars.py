@@ -24,13 +24,14 @@ class TestBundleDirective(BaseTestCase):
 
     def test_handlebars_mod(self):
         self.config.include('pyramid_amdjs')
+        self.config.include('pyramid_amdjs.static')
 
         from pyramid_amdjs import amd
 
         text = amd.build_init(self.request, '_')
         self.assertIn(
             '"handlebars": '
-            '"/_amdjs/static/lib/handlebars.runtime.js?_v=', text)
+            '"/_amdjs_handlebars/static/handlebars.runtime.js?_v=', text)
 
 
 class TestBundleReg(BaseTestCase):
@@ -408,20 +409,20 @@ class TestExtractI18N(unittest.TestCase):
 class TestNoNodeJS(BaseTestCase):
 
     def setUp(self):
-        from pyramid_amdjs import static
-        self.node_path = static.NODE_PATH
+        from pyramid_amdjs import handlebarsjs
+        self.node_path = handlebarsjs.NODE_PATH
 
-        static.NODE_PATH = None
+        handlebarsjs.NODE_PATH = None
 
         super(TestNoNodeJS, self).setUp()
 
     def tearDown(self):
-        from pyramid_amdjs import static
-        static.NODE_PATH = self.node_path
+        from pyramid_amdjs import handlebarsjs
+        handlebarsjs.NODE_PATH = self.node_path
 
     def test_handlebars_mod(self):
         from pyramid_amdjs import amd
 
         text = amd.build_init(self.request, '_')
         self.assertIn(
-            '"handlebars": "/_amdjs/static/lib/handlebars.js?_v=', text)
+            '"handlebars": "/_amdjs_handlebars/static/handlebars.js?_v=', text)

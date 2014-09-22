@@ -11,8 +11,8 @@ from pyramid.registry import Introspectable
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.exceptions import ConfigurationError
 
-from . import compat
-from .compat import json, check_output
+from pyramid_amdjs import compat
+from pyramid_amdjs.compat import json, check_output
 
 log = logging.getLogger('pyramid_amdjs')
 
