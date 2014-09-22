@@ -38,4 +38,4 @@ def includeme(config):
     config.include('pyramid_amdjs.handlebarsjs')
 
     # pyramid
-    config.include('pyramid_amdjs.pyramid')
+    config.include('pyramid_amdjs.pyramidjs')
